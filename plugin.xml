@@ -1,0 +1,20 @@
+<library path="lib/libroi_viewpoint_planner_rqt_plugin">
+  <class name="roi_viewpoint_planner_rqt_plugin/RoiViewpointPlannerRqtPlugin" type="roi_viewpoint_planner_rqt_plugin::RoiViewpointPlannerRqtPlugin" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+      A plugin to control parameters and behaviour of the roi viewpoint planner.
+    </description>
+    <qtgui>
+      <group>
+        <label>Configuration</label>
+      </group>
+      <!-- optional grouping...
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>RoiViewpointPlanner Plugin</label>
+      <icon type="theme">system-help</icon>
+      <statustip>A plugin to control parameters and behaviour of the roi viewpoint planner.</statustip>
+    </qtgui>
+  </class>
+</library>

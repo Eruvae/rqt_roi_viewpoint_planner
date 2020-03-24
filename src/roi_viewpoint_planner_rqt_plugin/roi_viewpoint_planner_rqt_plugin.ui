@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RoiViewpointPlannerRqtPlugin</class>
+ <widget class="QWidget" name="RoiViewpointPlannerRqtPlugin">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QComboBox" name="modeChangeBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>70</y>
+     <width>141</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>Idle</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Automatic</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>ROI sampling</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Contour sampling</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Border sampling</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLineEdit" name="statusTextBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>210</y>
+     <width>231</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="plannerModeLabel">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>50</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Planner mode</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="activateExecutionCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>160</y>
+     <width>191</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Activate plan execution</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
