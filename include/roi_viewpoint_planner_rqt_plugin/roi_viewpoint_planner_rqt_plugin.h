@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
-#include "roi_viewpoint_planner_rqt_plugin/ui_roi_viewpoint_planner_rqt_plugin.h"
+#include "ui_roi_viewpoint_planner_rqt_plugin.h"
 
 namespace roi_viewpoint_planner_rqt_plugin
 {

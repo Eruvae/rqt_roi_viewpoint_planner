@@ -34,7 +34,12 @@
    </item>
    <item>
     <property name="text">
-     <string>ROI sampling</string>
+     <string>ROI center sampling</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>ROI contour sampling</string>
     </property>
    </item>
    <item>

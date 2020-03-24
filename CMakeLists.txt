@@ -147,7 +147,7 @@ endif()
 ## Your package locations should be listed before other locations
 include_directories(
   include
-  ${CMAKE_CURRENT_BINARY_DIR}/..
+  ${CMAKE_CURRENT_BINARY_DIR} # contains ui generated header
   ${catkin_INCLUDE_DIRS}
 )
 
