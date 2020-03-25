@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>roi_viewpoint_planner_rqt_plugin</name>
+  <name>rqt_roi_viewpoint_planner</name>
   <version>0.1.0</version>
-  <description>The roi_viewpoint_planner package</description>
+  <description>The rqt_roi_viewpoint_planner package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

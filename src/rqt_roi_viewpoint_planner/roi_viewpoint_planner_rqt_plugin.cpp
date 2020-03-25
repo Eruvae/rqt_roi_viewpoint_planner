@@ -1,11 +1,11 @@
-#include "roi_viewpoint_planner_rqt_plugin/roi_viewpoint_planner_rqt_plugin.h"
+#include "rqt_roi_viewpoint_planner/roi_viewpoint_planner_rqt_plugin.h"
 
 #include <pluginlib/class_list_macros.h>
 #include <QStringList>
 #include <roi_viewpoint_planner/ChangePlannerMode.h>
 #include <std_srvs/SetBool.h>
 
-namespace roi_viewpoint_planner_rqt_plugin
+namespace rqt_roi_viewpoint_planner
 {
 
 RoiViewpointPlannerRqtPlugin::RoiViewpointPlannerRqtPlugin() :
@@ -92,5 +92,5 @@ void RoiViewpointPlannerRqtPlugin::on_activateExecutionCheckBox_toggled(bool che
 
 } // namespace roi_viewpoint_planner_rqt_plugin
 
-PLUGINLIB_EXPORT_CLASS(roi_viewpoint_planner_rqt_plugin::RoiViewpointPlannerRqtPlugin, rqt_gui_cpp::Plugin)
+PLUGINLIB_EXPORT_CLASS(rqt_roi_viewpoint_planner::RoiViewpointPlannerRqtPlugin, rqt_gui_cpp::Plugin)
 //PLUGINLIB_DECLARE_CLASS(roi_viewpoint_planner_rqt_plugin, RoiViewpointPlannerRqtPlugin, roi_viewpoint_planner_rqt_plugin::RoiViewpointPlannerRqtPlugin, rqt_gui_cpp::Plugin)

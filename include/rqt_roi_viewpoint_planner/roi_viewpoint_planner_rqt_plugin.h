@@ -6,7 +6,7 @@
 #include <rqt_gui_cpp/plugin.h>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
 
-namespace roi_viewpoint_planner_rqt_plugin
+namespace rqt_roi_viewpoint_planner
 {
 
 class RoiViewpointPlannerRqtPlugin : public rqt_gui_cpp::Plugin

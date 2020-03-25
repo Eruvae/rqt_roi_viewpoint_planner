@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(roi_viewpoint_planner_rqt_plugin)
+project(rqt_roi_viewpoint_planner)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17)
@@ -119,15 +119,15 @@ catkin_package(
 )
 
 set (rvp_rqt_SRCS
-  src/roi_viewpoint_planner_rqt_plugin/roi_viewpoint_planner_rqt_plugin.cpp
+  src/rqt_roi_viewpoint_planner/roi_viewpoint_planner_rqt_plugin.cpp
 )
 
 set(rvp_rqt_HDRS
-  include/roi_viewpoint_planner_rqt_plugin/roi_viewpoint_planner_rqt_plugin.h
+  include/rqt_roi_viewpoint_planner/roi_viewpoint_planner_rqt_plugin.h
 )
 
 set(rvp_rqt_UIS
-  src/roi_viewpoint_planner_rqt_plugin/roi_viewpoint_planner_rqt_plugin.ui
+  src/rqt_roi_viewpoint_planner/roi_viewpoint_planner_rqt_plugin.ui
 )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
