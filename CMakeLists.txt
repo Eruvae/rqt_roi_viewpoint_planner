@@ -9,6 +9,8 @@ set (CATKIN_DEPENDENCIES
     rqt_gui
     rqt_gui_cpp
     roi_viewpoint_planner
+    std_srvs
+    dynamic_reconfigure
 )
 
 ## Find catkin macros and libraries

@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
+#include <dynamic_reconfigure/client.h>
+#include <roi_viewpoint_planner/PlannerConfig.h>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
 
 namespace rqt_roi_viewpoint_planner
@@ -25,11 +27,15 @@ private slots:
 
   void on_activateExecutionCheckBox_toggled(bool checked);
 
+  void on_requireConfirmationCheckBox_toggled(bool checked);
+
 private:
   Ui::RoiViewpointPlannerRqtPlugin ui_;
   QWidget* widget_;
   ros::ServiceClient changePlannerModeClient;
   ros::ServiceClient activatePlanExecutionClient;
+  ros::ServiceServer confirmPlanExecutionServer;
+  dynamic_reconfigure::Client<roi_viewpoint_planner::PlannerConfig> *configClient;
 };
 
 }

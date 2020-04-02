@@ -55,6 +55,8 @@
   <depend>rqt_gui</depend>
   <depend>rqt_gui_cpp</depend>
   <depend>roi_viewpoint_planner</depend>
+  <depend>std_srvs</depend>
+  <depend>dynamic_reconfigure</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
