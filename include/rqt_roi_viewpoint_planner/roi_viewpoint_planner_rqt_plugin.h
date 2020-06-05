@@ -48,9 +48,13 @@ private slots:
   void on_useCartesianMotionCheckBox_clicked(bool checked);
 
   void configChanged();
+  void planRequest(bool enable);
+  void plannerStateChanged(bool planning, bool moving, bool occ_scan, bool roi_scan);
 
 signals:
   void configChangedSignal();
+  void planRequestSignal(bool enable);
+  void plannerStateSignal(bool planning, bool moving, bool occ_scan, bool roi_scan);
 
 private:
   Ui::RoiViewpointPlannerRqtPlugin ui;

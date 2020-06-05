@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QtGlobal>
+#include <QThread>
 #include <roi_viewpoint_planner/ChangePlannerMode.h>
 
 namespace rqt_roi_viewpoint_planner
@@ -29,6 +30,8 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   context.addWidget(widget);
 
   connect(this, SIGNAL(configChangedSignal()), this, SLOT(configChanged()));
+  connect(this, SIGNAL(planRequestSignal(bool)), this, SLOT(planRequest(bool)));
+  connect(this, SIGNAL(plannerStateSignal(bool,bool,bool,bool)), this, SLOT(plannerStateChanged(bool,bool,bool,bool)));
 
   connect(ui.modeComboBox, SIGNAL(activated(int)), this, SLOT(on_modeComboBox_activated(int)));
   connect(ui.activateExecutionCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_activateExecutionCheckBox_clicked(bool)));
@@ -61,6 +64,8 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   configClient = new dynamic_reconfigure::Client<roi_viewpoint_planner::PlannerConfig>("/roi_viewpoint_planner",
                  boost::bind(&RoiViewpointPlannerRqtPlugin::configCallback, this, _1));
+
+  //ROS_INFO_STREAM("Init is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
 }
 
 void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
@@ -360,6 +365,7 @@ void RoiViewpointPlannerRqtPlugin::on_useCartesianMotionCheckBox_clicked(bool ch
 
 void RoiViewpointPlannerRqtPlugin::configChanged()
 {
+  ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
   if (received_config.mode != current_config.mode)
   {
     ui.modeComboBox->setCurrentIndex(received_config.mode);
@@ -427,45 +433,69 @@ void RoiViewpointPlannerRqtPlugin::configChanged()
   current_config = received_config;
 }
 
+void RoiViewpointPlannerRqtPlugin::planRequest(bool enable)
+{
+  ROS_INFO_STREAM("Plan request slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  ui.planRequestLed->setState(enable);
+  ui.planAcceptPushButton->setEnabled(enable);
+  ui.planDeclinePushButton->setEnabled(enable);
+  if (enable)
+    ui.statusTextBox->setText("Plan requested; check rviz for plan");
+  else
+    ui.statusTextBox->setText("Plan request answered");
+}
+
+void RoiViewpointPlannerRqtPlugin::plannerStateChanged(bool planning, bool moving, bool occ_scan, bool roi_scan)
+{
+  ROS_INFO_STREAM("Planner state slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  ui.planningLed->setState(planning);
+  ui.movingLed->setState(moving);
+  ui.occScanLed->setState(occ_scan);
+  ui.roiScanLed->setState(roi_scan);
+}
+
 void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc)
 {
   ROS_INFO_STREAM("Description callback called");
 }
 
+// DO NOT DIRECTLY UPDATE UI ELEMENTS HERE
 void RoiViewpointPlannerRqtPlugin::configCallback(const roi_viewpoint_planner::PlannerConfig &conf)
 {
+  ROS_INFO_STREAM("Config callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
   ROS_INFO_STREAM("Config callback called");
-  static bool first_config_received = false;
   received_config = conf;
-  //if (!first_config_received) // extra wait on first config to wait for initalization
-  //{
-    ROS_INFO_STREAM("First callback; wait for 50 ms");
-    first_config_received = true;
-    QTimer::singleShot(50, this, &RoiViewpointPlannerRqtPlugin::configChanged);
-  /*}
-  else
-  {
-    emit configChangedSignal();
-  }*/
+  emit configChangedSignal();
 }
 
+// DO NOT DIRECTLY UPDATE UI ELEMENTS HERE
 bool RoiViewpointPlannerRqtPlugin::confirmPlanExecutionCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
-  QMessageBox msgBox;
-  msgBox.setText("Plan confirmation requested");
-  msgBox.setInformativeText("Do you want to execute the plan (see rviz)?");
-  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-  msgBox.setDefaultButton(QMessageBox::No);
-  int ret = msgBox.exec();
-  res.success = (ret == QMessageBox::Yes);
+  ROS_INFO_STREAM("Confirm plan callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  emit planRequestSignal(true);
+
+  QEventLoop loop;
+  bool accepted = false;
+  connect( ui.planAcceptPushButton, &QPushButton::clicked, [&]() { accepted = true; loop.quit(); });
+  connect( ui.planDeclinePushButton, &QPushButton::clicked, [&]() { accepted = false; loop.quit(); });
+  ROS_INFO_STREAM("Loop starting");
+  loop.exec();
+  ROS_INFO_STREAM("Loop left");
+  emit planRequestSignal(false);
+  ROS_INFO_STREAM("Plan request signal emitted starting");
+  if (accepted)
+    res.success = true;
+  else
+    res.success = false;
+
   return true;
 }
 
+// DO NOT DIRECTLY UPDATE UI ELEMENTS HERE
 void RoiViewpointPlannerRqtPlugin::plannerStateCallback(const roi_viewpoint_planner::PlannerStateConstPtr &state)
 {
-  ui.movingLed->setState(state->robot_is_moving);
-  ui.occScanLed->setState(state->occupancy_scanned);
-  ui.roiScanLed->setState(state->roi_scanned);
+  //ROS_INFO_STREAM("Planner state callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  emit plannerStateSignal(false, state->robot_is_moving, state->occupancy_scanned, state->roi_scanned);
 }
 
 } // namespace roi_viewpoint_planner_rqt_plugin
