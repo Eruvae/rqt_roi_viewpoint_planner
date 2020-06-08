@@ -13,482 +13,455 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QLineEdit" name="statusTextBox">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>440</y>
-     <width>571</width>
-     <height>25</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QGroupBox" name="plannerStateGroupBox">
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>20</y>
-     <width>121</width>
-     <height>141</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Planner State</string>
-   </property>
-   <widget class="QWidget" name="formLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>101</width>
-      <height>101</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="plannerStateLayout">
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" rowspan="2">
+    <layout class="QFormLayout" name="configLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="planningLabel">
+      <widget class="QLabel" name="modeLabel">
        <property name="text">
-        <string>Planning</string>
+        <string>Planner Mode</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="LedIndicator" name="planningLed" native="true"/>
+      <widget class="QComboBox" name="modeComboBox">
+       <item>
+        <property name="text">
+         <string>Idle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Automatic</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ROI center sampling</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ROI contour sampling</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Contour sampling</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Border sampling</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ROI adjacent</string>
+        </property>
+       </item>
+      </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="movingLabel">
+      <widget class="QLabel" name="activateExecutionLabel">
        <property name="text">
-        <string>Moving</string>
+        <string>Activate execution</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="LedIndicator" name="movingLed" native="true"/>
+      <widget class="QCheckBox" name="activateExecutionCheckBox"/>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="occScanLabel">
+      <widget class="QLabel" name="requireConfirmationLabel">
        <property name="text">
-        <string>Occ-Scan</string>
+        <string>Require confirmation</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="LedIndicator" name="occScanLed" native="true"/>
+      <widget class="QCheckBox" name="requireConfirmationCheckBox"/>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="roiScanLabel">
+      <widget class="QLabel" name="minRangeLabel">
        <property name="text">
-        <string>ROI-Scan</string>
+        <string>Sensor min range</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="LedIndicator" name="roiScanLed" native="true"/>
+      <layout class="QHBoxLayout" name="minRangeLayout">
+       <item>
+        <widget class="QLabel" name="minRangeMin">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="minRangeSlider">
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="minRangeMax">
+         <property name="text">
+          <string>2</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="minRangeSpinBox">
+         <property name="maximum">
+          <double>2.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="maxRangeLabel">
+       <property name="text">
+        <string>Sensor max range</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <layout class="QHBoxLayout" name="maxRangeLayout">
+       <item>
+        <widget class="QLabel" name="maxRangeMin">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="maxRangeSlider">
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="maxRangeMax">
+         <property name="text">
+          <string>2</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="maxRangeSpinBox">
+         <property name="maximum">
+          <double>2.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="insertOccIfNotMovedLabel">
+       <property name="text">
+        <string>Insert Occ if not moved</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QCheckBox" name="insertOccIfNotMovedCheckBox"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="insertRoiIfNotMovedLabel">
+       <property name="text">
+        <string>Insert ROI if not moved</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QCheckBox" name="insertRoiIfNotMovedCheckBox"/>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="insertOccWhileMovingLabel">
+       <property name="text">
+        <string>Insert Occ while moving</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QCheckBox" name="insertOccWhileMovingCheckBox"/>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="insertRoiWhileMovingLabel">
+       <property name="text">
+        <string>Insert ROI while moving</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QCheckBox" name="insertRoiWhileMovingCheckBox"/>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="waitForOccScanLabel">
+       <property name="text">
+        <string>Wait for Occ scan</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QCheckBox" name="waitForOccScanCheckBox"/>
+     </item>
+     <item row="10" column="0">
+      <widget class="QLabel" name="waitForRoiScanLabel">
+       <property name="text">
+        <string>Wait for ROI scan</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QCheckBox" name="waitForRoiScanCheckBox"/>
+     </item>
+     <item row="11" column="0">
+      <widget class="QLabel" name="publishPlanningStateLabel">
+       <property name="text">
+        <string>Publish planning state</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
+      <widget class="QCheckBox" name="publishPlanningStateCheckBox"/>
+     </item>
+     <item row="12" column="0">
+      <widget class="QLabel" name="plannerLabel">
+       <property name="text">
+        <string>Planner</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="1">
+      <widget class="QComboBox" name="plannerComboBox">
+       <item>
+        <property name="text">
+         <string>SBL</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>EST</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>LBKPIECE</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>BKPIECE</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>KPIECE</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>RTT</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>RRTConnect</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>RRTstar</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>TRRT</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>PRM</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>PRMstar</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="13" column="0">
+      <widget class="QLabel" name="planningTimeLabel">
+       <property name="text">
+        <string>Planning Time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="1">
+      <layout class="QHBoxLayout" name="planningTimeLayout">
+       <item>
+        <widget class="QLabel" name="planningTimeMin">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="planningTimeSlider">
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="planningTimeMax">
+         <property name="text">
+          <string>30</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="planningTimeSpinBox">
+         <property name="maximum">
+          <double>30.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="14" column="0">
+      <widget class="QLabel" name="useCartesianMotionLabel">
+       <property name="text">
+        <string>Use cartesian motion</string>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="1">
+      <widget class="QCheckBox" name="useCartesianMotionCheckBox"/>
      </item>
     </layout>
-   </widget>
-  </widget>
-  <widget class="QWidget" name="formLayoutWidget_2">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>20</y>
-     <width>361</width>
-     <height>401</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="configLayout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="modeLabel">
-      <property name="text">
-       <string>Planner Mode</string>
+   </item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="plannerStateGroupBox">
+     <property name="title">
+      <string>Planner State</string>
+     </property>
+     <widget class="QWidget" name="formLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>101</width>
+        <height>101</height>
+       </rect>
       </property>
+      <layout class="QFormLayout" name="plannerStateLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="planningLabel">
+         <property name="text">
+          <string>Planning</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="LedIndicator" name="planningLed" native="true"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="movingLabel">
+         <property name="text">
+          <string>Moving</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="LedIndicator" name="movingLed" native="true"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="occScanLabel">
+         <property name="text">
+          <string>Occ-Scan</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="LedIndicator" name="occScanLed" native="true"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="roiScanLabel">
+         <property name="text">
+          <string>ROI-Scan</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="LedIndicator" name="roiScanLed" native="true"/>
+       </item>
+      </layout>
      </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QComboBox" name="modeComboBox">
-      <item>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="planRequestLabel">
        <property name="text">
-        <string>Idle</string>
+        <string>Plan request</string>
        </property>
-      </item>
-      <item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QPushButton" name="planAcceptPushButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
-        <string>Automatic</string>
+        <string>Accept</string>
        </property>
-      </item>
-      <item>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="planDeclinePushButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
-        <string>ROI center sampling</string>
+        <string>Decline</string>
        </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>ROI contour sampling</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Contour sampling</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Border sampling</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>ROI adjacent</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="activateExecutionLabel">
-      <property name="text">
-       <string>Activate execution</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QCheckBox" name="activateExecutionCheckBox"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="requireConfirmationLabel">
-      <property name="text">
-       <string>Require confirmation</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QCheckBox" name="requireConfirmationCheckBox"/>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="minRangeLabel">
-      <property name="text">
-       <string>Sensor min range</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <layout class="QHBoxLayout" name="minRangeLayout">
-      <item>
-       <widget class="QLabel" name="minRangeMin">
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="minRangeSlider">
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="minRangeMax">
-        <property name="text">
-         <string>2</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDoubleSpinBox" name="minRangeSpinBox">
-        <property name="maximum">
-         <double>2.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="maxRangeLabel">
-      <property name="text">
-       <string>Sensor max range</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <layout class="QHBoxLayout" name="maxRangeLayout">
-      <item>
-       <widget class="QLabel" name="maxRangeMin">
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="maxRangeSlider">
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="maxRangeMax">
-        <property name="text">
-         <string>2</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDoubleSpinBox" name="maxRangeSpinBox">
-        <property name="maximum">
-         <double>2.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="insertOccIfNotMovedLabel">
-      <property name="text">
-       <string>Insert Occ if not moved</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QCheckBox" name="insertOccIfNotMovedCheckBox"/>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="insertRoiIfNotMovedLabel">
-      <property name="text">
-       <string>Insert ROI if not moved</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QCheckBox" name="insertRoiIfNotMovedCheckBox"/>
-    </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="insertOccWhileMovingLabel">
-      <property name="text">
-       <string>Insert Occ while moving</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QCheckBox" name="insertOccWhileMovingCheckBox"/>
-    </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="insertRoiWhileMovingLabel">
-      <property name="text">
-       <string>Insert ROI while moving</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QCheckBox" name="insertRoiWhileMovingCheckBox"/>
-    </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="waitForOccScanLabel">
-      <property name="text">
-       <string>Wait for Occ scan</string>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="1">
-     <widget class="QCheckBox" name="waitForOccScanCheckBox"/>
-    </item>
-    <item row="10" column="0">
-     <widget class="QLabel" name="waitForRoiScanLabel">
-      <property name="text">
-       <string>Wait for ROI scan</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="1">
-     <widget class="QCheckBox" name="waitForRoiScanCheckBox"/>
-    </item>
-    <item row="11" column="0">
-     <widget class="QLabel" name="publishPlanningStateLabel">
-      <property name="text">
-       <string>Publish planning state</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="1">
-     <widget class="QCheckBox" name="publishPlanningStateCheckBox"/>
-    </item>
-    <item row="12" column="0">
-     <widget class="QLabel" name="plannerLabel">
-      <property name="text">
-       <string>Planner</string>
-      </property>
-     </widget>
-    </item>
-    <item row="12" column="1">
-     <widget class="QComboBox" name="plannerComboBox">
-      <item>
-       <property name="text">
-        <string>SBL</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>EST</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>LBKPIECE</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>BKPIECE</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>KPIECE</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>RTT</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>RRTConnect</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>RRTstar</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>TRRT</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>PRM</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>PRMstar</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="13" column="0">
-     <widget class="QLabel" name="planningTimeLabel">
-      <property name="text">
-       <string>Planning Time</string>
-      </property>
-     </widget>
-    </item>
-    <item row="13" column="1">
-     <layout class="QHBoxLayout" name="planningTimeLayout">
-      <item>
-       <widget class="QLabel" name="planningTimeMin">
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="planningTimeSlider">
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="planningTimeMax">
-        <property name="text">
-         <string>30</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDoubleSpinBox" name="planningTimeSpinBox">
-        <property name="maximum">
-         <double>30.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="14" column="0">
-     <widget class="QLabel" name="useCartesianMotionLabel">
-      <property name="text">
-       <string>Use cartesian motion</string>
-      </property>
-     </widget>
-    </item>
-    <item row="14" column="1">
-     <widget class="QCheckBox" name="useCartesianMotionCheckBox"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="formLayoutWidget_3">
-   <property name="geometry">
-    <rect>
-     <x>420</x>
-     <y>220</y>
-     <width>186</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="formLayout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="planRequestLabel">
-      <property name="text">
-       <string>Plan request</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="planAcceptPushButton">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Accept</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QPushButton" name="planDeclinePushButton">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Decline</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="LedIndicator" name="planRequestLed" native="true"/>
-    </item>
-   </layout>
-  </widget>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="LedIndicator" name="planRequestLed" native="true"/>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QLineEdit" name="statusTextBox"/>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>

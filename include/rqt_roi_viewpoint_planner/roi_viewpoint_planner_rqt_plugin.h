@@ -25,6 +25,7 @@ public:
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
 
 private slots:
+  // UI slots
   void on_modeComboBox_activated(int index);
   void on_activateExecutionCheckBox_clicked(bool checked);
   void on_requireConfirmationCheckBox_clicked(bool checked);
@@ -47,20 +48,21 @@ private slots:
   void on_planningTimeSpinBox_editingFinished();
   void on_useCartesianMotionCheckBox_clicked(bool checked);
 
-  void configChanged();
+  // Internal slots
+  void configChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
   void planRequest(bool enable);
-  void plannerStateChanged(bool planning, bool moving, bool occ_scan, bool roi_scan);
+  void plannerStateChanged(const roi_viewpoint_planner::PlannerStateConstPtr &state);
 
 signals:
-  void configChangedSignal();
+  // Internal signals
+  void configChangedSignal(const roi_viewpoint_planner::PlannerConfig &received_config);
   void planRequestSignal(bool enable);
-  void plannerStateSignal(bool planning, bool moving, bool occ_scan, bool roi_scan);
+  void plannerStateSignal(const roi_viewpoint_planner::PlannerStateConstPtr &state);
 
 private:
   Ui::RoiViewpointPlannerRqtPlugin ui;
   QWidget* widget;
   roi_viewpoint_planner::PlannerConfig current_config;
-  roi_viewpoint_planner::PlannerConfig received_config;
   //ros::ServiceClient changePlannerModeClient;
   //ros::ServiceClient activatePlanExecutionClient;
 
