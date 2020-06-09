@@ -372,7 +372,7 @@ void RoiViewpointPlannerRqtPlugin::on_useCartesianMotionCheckBox_clicked(bool ch
 void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
 {
   ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
-  if (received_config.mode != current_config.mode)
+  /*if (received_config.mode != current_config.mode)
   {
     ui.modeComboBox->setCurrentIndex(received_config.mode);
   }
@@ -434,8 +434,26 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
   if (received_config.use_cartesian_motion != current_config.use_cartesian_motion)
   {
     ui.useCartesianMotionCheckBox->setChecked(received_config.use_cartesian_motion);
-  }
+  }*/
 
+  ui.modeComboBox->setCurrentIndex(received_config.mode);
+  ui.activateExecutionCheckBox->setChecked(received_config.activate_execution);
+  ui.requireConfirmationCheckBox->setChecked(received_config.require_execution_confirmation);
+  minRangeSlider_setValue(received_config.sensor_min_range);
+  ui.minRangeSpinBox->setValue(received_config.sensor_min_range);
+  maxRangeSlider_setValue(received_config.sensor_max_range);
+  ui.maxRangeSpinBox->setValue(received_config.sensor_max_range);
+  ui.insertOccIfNotMovedCheckBox->setChecked(received_config.insert_occ_if_not_moved);
+  ui.insertRoiIfNotMovedCheckBox->setChecked(received_config.insert_roi_if_not_moved);
+  ui.insertOccWhileMovingCheckBox->setChecked(received_config.insert_occ_while_moving);
+  ui.insertRoiWhileMovingCheckBox->setChecked(received_config.insert_roi_while_moving);
+  ui.waitForOccScanCheckBox->setChecked(received_config.wait_for_occ_scan);
+  ui.waitForRoiScanCheckBox->setChecked(received_config.wait_for_roi_scan);
+  ui.publishPlanningStateCheckBox->setChecked(received_config.publish_planning_state);
+  ui.plannerComboBox->setCurrentText(QString::fromStdString(received_config.planner.substr(0, received_config.planner.size() - 14)));
+  planningTimeSlider_setValue(received_config.planning_time);
+  ui.planningTimeSpinBox->setValue(received_config.planning_time);
+  ui.useCartesianMotionCheckBox->setChecked(received_config.use_cartesian_motion);
   current_config = received_config;
 }
 
