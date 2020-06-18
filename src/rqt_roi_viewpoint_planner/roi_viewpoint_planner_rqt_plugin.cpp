@@ -60,6 +60,10 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.planningTimeSlider, SIGNAL(sliderReleased()), this, SLOT(on_planningTimeSlider_sliderReleased()));
   connect(ui.planningTimeSpinBox, SIGNAL(editingFinished()), this, SLOT(on_planningTimeSpinBox_editingFinished()));
   connect(ui.useCartesianMotionCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_useCartesianMotionCheckBox_clicked(bool)));
+  connect(ui.computeIkWhenSamplingCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_computeIkWhenSamplingCheckBox_clicked(bool)));
+  connect(ui.velocityScalingSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_velocityScalingSlider_sliderMoved(int)));
+  connect(ui.velocityScalingSlider, SIGNAL(sliderReleased()), this, SLOT(on_velocityScalingSlider_sliderReleased()));
+  connect(ui.velocityScalingSpinBox, SIGNAL(editingFinished()), this, SLOT(on_velocityScalingSpinBox_editingFinished()));
 
   //changePlannerModeClient = getNodeHandle().serviceClient<roi_viewpoint_planner::ChangePlannerMode>("/roi_viewpoint_planner/change_planner_mode");
   //activatePlanExecutionClient = getNodeHandle().serviceClient<std_srvs::SetBool>("/roi_viewpoint_planner/activate_plan_execution");
@@ -369,6 +373,59 @@ void RoiViewpointPlannerRqtPlugin::on_useCartesianMotionCheckBox_clicked(bool ch
   ui.statusTextBox->setText("Use cartesian motion change successful");
 }
 
+void RoiViewpointPlannerRqtPlugin::on_computeIkWhenSamplingCheckBox_clicked(bool checked)
+{
+  current_config.compute_ik_when_sampling = checked;
+  if (!configClient->setConfiguration(current_config))
+  {
+    ui.statusTextBox->setText("Compute IK when sampling change failed");
+    return;
+  }
+  ui.statusTextBox->setText("Compute IK when sampling change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::velocityScalingSlider_setValue(double value)
+{
+  double minVal = ui.velocityScalingMin->text().toDouble();
+  double maxVal = ui.velocityScalingMax->text().toDouble();
+  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
+  ui.velocityScalingSlider->setValue(position);
+}
+
+void RoiViewpointPlannerRqtPlugin::velocityScalingSpinBox_setPosition(int position)
+{
+  double minVal = ui.velocityScalingMin->text().toDouble();
+  double maxVal = ui.velocityScalingMax->text().toDouble();
+  ui.velocityScalingSpinBox->setValue(minVal + (double)position / 100.0 * (maxVal - minVal));
+}
+
+void RoiViewpointPlannerRqtPlugin::velocityScaling_sendConfig()
+{
+  current_config.velocity_scaling = ui.velocityScalingSpinBox->value();
+  if (!configClient->setConfiguration(current_config))
+  {
+    ui.statusTextBox->setText("Velocity scaling change failed");
+    return;
+  }
+  ui.statusTextBox->setText("Velocity scaling change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_velocityScalingSlider_sliderMoved(int position)
+{
+  velocityScalingSpinBox_setPosition(position);
+}
+
+void RoiViewpointPlannerRqtPlugin::on_velocityScalingSlider_sliderReleased()
+{
+  velocityScaling_sendConfig();
+}
+
+void RoiViewpointPlannerRqtPlugin::on_velocityScalingSpinBox_editingFinished()
+{
+  velocityScalingSlider_setValue(ui.planningTimeSpinBox->value());
+  velocityScaling_sendConfig();
+}
+
 void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
 {
   ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
@@ -454,6 +511,9 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
   planningTimeSlider_setValue(received_config.planning_time);
   ui.planningTimeSpinBox->setValue(received_config.planning_time);
   ui.useCartesianMotionCheckBox->setChecked(received_config.use_cartesian_motion);
+  ui.computeIkWhenSamplingCheckBox->setChecked(received_config.compute_ik_when_sampling);
+  velocityScalingSlider_setValue(received_config.velocity_scaling);
+  ui.velocityScalingSpinBox->setValue(received_config.velocity_scaling);
   current_config = received_config;
 }
 

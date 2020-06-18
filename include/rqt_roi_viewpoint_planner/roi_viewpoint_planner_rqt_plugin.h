@@ -47,6 +47,10 @@ private slots:
   void on_planningTimeSlider_sliderReleased();
   void on_planningTimeSpinBox_editingFinished();
   void on_useCartesianMotionCheckBox_clicked(bool checked);
+  void on_computeIkWhenSamplingCheckBox_clicked(bool checked);
+  void on_velocityScalingSlider_sliderMoved(int position);
+  void on_velocityScalingSlider_sliderReleased();
+  void on_velocityScalingSpinBox_editingFinished();
 
   // Internal slots
   void configChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
@@ -86,6 +90,9 @@ private:
   void planningTimeSlider_setValue(double value);
   void planningTimeSpinBox_setPosition(int position);
   void planningTime_sendConfig();
+  void velocityScalingSlider_setValue(double value);
+  void velocityScalingSpinBox_setPosition(int position);
+  void velocityScaling_sendConfig();
 };
 
 }
