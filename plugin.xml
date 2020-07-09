@@ -6,6 +6,8 @@
     <qtgui>
       <group>
         <label>Configuration</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to configuration.</statustip>
       </group>
       <!-- optional grouping...
       <group>
@@ -13,7 +15,7 @@
       </group>
       -->
       <label>ROI Viewpoint Planner</label>
-      <icon type="theme">system-help</icon>
+      <icon type="theme">accessories-text-editor</icon>
       <statustip>A plugin to control parameters and behaviour of the roi viewpoint planner.</statustip>
     </qtgui>
   </class>
