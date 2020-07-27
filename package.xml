@@ -54,7 +54,7 @@
   <depend>roscpp</depend>
   <depend>rqt_gui</depend>
   <depend>rqt_gui_cpp</depend>
-  <depend>roi_viewpoint_planner</depend>
+  <depend>roi_viewpoint_planner_msgs</depend>
   <depend>std_srvs</depend>
   <depend>dynamic_reconfigure</depend>
 

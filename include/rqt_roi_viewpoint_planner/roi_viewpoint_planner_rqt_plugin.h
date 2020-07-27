@@ -5,8 +5,8 @@
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <dynamic_reconfigure/client.h>
-#include <roi_viewpoint_planner/PlannerConfig.h>
-#include <roi_viewpoint_planner/PlannerState.h>
+#include <roi_viewpoint_planner_msgs/PlannerConfig.h>
+#include <roi_viewpoint_planner_msgs/PlannerState.h>
 #include <std_srvs/Trigger.h>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
 
@@ -55,13 +55,13 @@ private slots:
   // Internal slots
   void configChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
   void planRequest(bool enable);
-  void plannerStateChanged(const roi_viewpoint_planner::PlannerStateConstPtr &state);
+  void plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
 signals:
   // Internal signals
   void configChangedSignal(const roi_viewpoint_planner::PlannerConfig &received_config);
   void planRequestSignal(bool enable);
-  void plannerStateSignal(const roi_viewpoint_planner::PlannerStateConstPtr &state);
+  void plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
 private:
   Ui::RoiViewpointPlannerRqtPlugin ui;
@@ -79,7 +79,7 @@ private:
   void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc);
   void configCallback(const roi_viewpoint_planner::PlannerConfig &conf);
   bool confirmPlanExecutionCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-  void plannerStateCallback(const roi_viewpoint_planner::PlannerStateConstPtr &state);
+  void plannerStateCallback(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
   void minRangeSlider_setValue(double value);
   void minRangeSpinBox_setPosition(int position);

@@ -6,10 +6,10 @@
 #include <QTimer>
 #include <QtGlobal>
 #include <QThread>
-#include <roi_viewpoint_planner/ChangePlannerMode.h>
+#include <roi_viewpoint_planner_msgs/ChangePlannerMode.h>
 
 Q_DECLARE_METATYPE(roi_viewpoint_planner::PlannerConfig)
-Q_DECLARE_METATYPE(roi_viewpoint_planner::PlannerStateConstPtr)
+Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
 
 namespace rqt_roi_viewpoint_planner
 {
@@ -33,11 +33,11 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   context.addWidget(widget);
 
   qRegisterMetaType<roi_viewpoint_planner::PlannerConfig>();
-  qRegisterMetaType<roi_viewpoint_planner::PlannerStateConstPtr>();
+  qRegisterMetaType<roi_viewpoint_planner_msgs::PlannerStateConstPtr>();
 
   connect(this, SIGNAL(configChangedSignal(const roi_viewpoint_planner::PlannerConfig&)), this, SLOT(configChanged(const roi_viewpoint_planner::PlannerConfig&)));
   connect(this, SIGNAL(planRequestSignal(bool)), this, SLOT(planRequest(bool)));
-  connect(this, SIGNAL(plannerStateSignal(const roi_viewpoint_planner::PlannerStateConstPtr &)), this, SLOT(plannerStateChanged(const roi_viewpoint_planner::PlannerStateConstPtr &)));
+  connect(this, SIGNAL(plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)), this, SLOT(plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)));
 
   connect(ui.modeComboBox, SIGNAL(activated(int)), this, SLOT(on_modeComboBox_activated(int)));
   connect(ui.activateExecutionCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_activateExecutionCheckBox_clicked(bool)));
@@ -65,7 +65,7 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.velocityScalingSlider, SIGNAL(sliderReleased()), this, SLOT(on_velocityScalingSlider_sliderReleased()));
   connect(ui.velocityScalingSpinBox, SIGNAL(editingFinished()), this, SLOT(on_velocityScalingSpinBox_editingFinished()));
 
-  //changePlannerModeClient = getNodeHandle().serviceClient<roi_viewpoint_planner::ChangePlannerMode>("/roi_viewpoint_planner/change_planner_mode");
+  //changePlannerModeClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::ChangePlannerMode>("/roi_viewpoint_planner/change_planner_mode");
   //activatePlanExecutionClient = getNodeHandle().serviceClient<std_srvs::SetBool>("/roi_viewpoint_planner/activate_plan_execution");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
@@ -529,7 +529,7 @@ void RoiViewpointPlannerRqtPlugin::planRequest(bool enable)
     ui.statusTextBox->setText("Plan request answered");
 }
 
-void RoiViewpointPlannerRqtPlugin::plannerStateChanged(const roi_viewpoint_planner::PlannerStateConstPtr &state)
+void RoiViewpointPlannerRqtPlugin::plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state)
 {
   ROS_INFO_STREAM("Planner state slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
   ui.planningLed->setState(false);
@@ -575,7 +575,7 @@ bool RoiViewpointPlannerRqtPlugin::confirmPlanExecutionCallback(std_srvs::Trigge
 }
 
 // DO NOT DIRECTLY UPDATE UI ELEMENTS HERE
-void RoiViewpointPlannerRqtPlugin::plannerStateCallback(const roi_viewpoint_planner::PlannerStateConstPtr &state)
+void RoiViewpointPlannerRqtPlugin::plannerStateCallback(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state)
 {
   //ROS_INFO_STREAM("Planner state callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
   emit plannerStateSignal(state);

@@ -8,7 +8,7 @@ set (CATKIN_DEPENDENCIES
     roscpp
     rqt_gui
     rqt_gui_cpp
-    roi_viewpoint_planner
+    roi_viewpoint_planner_msgs
     std_srvs
     dynamic_reconfigure
 )
