@@ -7,6 +7,7 @@
 #include <dynamic_reconfigure/client.h>
 #include <roi_viewpoint_planner_msgs/PlannerConfig.h>
 #include <roi_viewpoint_planner_msgs/PlannerState.h>
+#include <roi_viewpoint_planner_msgs/SaveOctomap.h>
 #include <std_srvs/Trigger.h>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
 
@@ -51,6 +52,9 @@ private slots:
   void on_velocityScalingSlider_sliderMoved(int position);
   void on_velocityScalingSlider_sliderReleased();
   void on_velocityScalingSpinBox_editingFinished();
+  void on_recordMapUpdatesCheckBox_clicked(bool checked);
+  void on_recordViewpointsCheckBox_clicked(bool checked);
+  void on_saveMapPushButton_clicked();
 
   // Internal slots
   void configChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
@@ -69,6 +73,7 @@ private:
   roi_viewpoint_planner::PlannerConfig current_config;
   //ros::ServiceClient changePlannerModeClient;
   //ros::ServiceClient activatePlanExecutionClient;
+  ros::ServiceClient saveOctomapClient;
 
   ros::Subscriber plannerStateSub;
 

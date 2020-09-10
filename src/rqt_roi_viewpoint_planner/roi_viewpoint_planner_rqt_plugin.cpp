@@ -64,9 +64,13 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.velocityScalingSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_velocityScalingSlider_sliderMoved(int)));
   connect(ui.velocityScalingSlider, SIGNAL(sliderReleased()), this, SLOT(on_velocityScalingSlider_sliderReleased()));
   connect(ui.velocityScalingSpinBox, SIGNAL(editingFinished()), this, SLOT(on_velocityScalingSpinBox_editingFinished()));
+  connect(ui.recordMapUpdatesCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordMapUpdatesCheckBox_clicked(bool)));
+  connect(ui.recordViewpointsCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordViewpointsCheckBox_clicked(bool)));
+  connect(ui.saveMapPushButton, SIGNAL(clicked()), this, SLOT(on_saveMapPushButton_clicked()));
 
   //changePlannerModeClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::ChangePlannerMode>("/roi_viewpoint_planner/change_planner_mode");
   //activatePlanExecutionClient = getNodeHandle().serviceClient<std_srvs::SetBool>("/roi_viewpoint_planner/activate_plan_execution");
+  saveOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveOctomap>("/roi_viewpoint_planner/save_octomap");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
 
@@ -85,6 +89,7 @@ void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
   //activatePlanExecutionClient.shutdown();
   plannerStateSub.shutdown();
   confirmPlanExecutionServer.shutdown();
+  saveOctomapClient.shutdown();
 }
 
 void RoiViewpointPlannerRqtPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
@@ -426,6 +431,28 @@ void RoiViewpointPlannerRqtPlugin::on_velocityScalingSpinBox_editingFinished()
   velocityScaling_sendConfig();
 }
 
+void RoiViewpointPlannerRqtPlugin::on_recordMapUpdatesCheckBox_clicked(bool checked)
+{
+  current_config.record_map_updates = checked;
+  if (!configClient->setConfiguration(current_config))
+  {
+    ui.statusTextBox->setText("Record map updates change failed");
+    return;
+  }
+  ui.statusTextBox->setText("Record map updates change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_recordViewpointsCheckBox_clicked(bool checked)
+{
+  current_config.record_viewpoints = checked;
+  if (!configClient->setConfiguration(current_config))
+  {
+    ui.statusTextBox->setText("Record viewpoints change failed");
+    return;
+  }
+  ui.statusTextBox->setText("Record viewpoints change successful");
+}
+
 void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
 {
   ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
@@ -514,6 +541,8 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
   ui.computeIkWhenSamplingCheckBox->setChecked(received_config.compute_ik_when_sampling);
   velocityScalingSlider_setValue(received_config.velocity_scaling);
   ui.velocityScalingSpinBox->setValue(received_config.velocity_scaling);
+  ui.recordMapUpdatesCheckBox->setChecked(received_config.record_map_updates);
+  ui.recordViewpointsCheckBox->setChecked(received_config.record_viewpoints);
   current_config = received_config;
 }
 
@@ -580,6 +609,23 @@ void RoiViewpointPlannerRqtPlugin::plannerStateCallback(const roi_viewpoint_plan
   //ROS_INFO_STREAM("Planner state callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
   emit plannerStateSignal(state);
 }
+
+void RoiViewpointPlannerRqtPlugin::on_saveMapPushButton_clicked()
+{
+  roi_viewpoint_planner_msgs::SaveOctomap srv;
+  if (saveOctomapClient.call(srv))
+  {
+    if (srv.response.success)
+      ui.statusTextBox->setText("Map saved successfully");
+    else
+      ui.statusTextBox->setText("Map could not be saved");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call save map service");
+  }
+}
+
 
 } // namespace roi_viewpoint_planner_rqt_plugin
 
