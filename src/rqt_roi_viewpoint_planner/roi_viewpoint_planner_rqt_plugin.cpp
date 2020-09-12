@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QtGlobal>
 #include <QThread>
+#include <QFileDialog>
 #include <roi_viewpoint_planner_msgs/ChangePlannerMode.h>
 
 Q_DECLARE_METATYPE(roi_viewpoint_planner::PlannerConfig)
@@ -67,10 +68,12 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.recordMapUpdatesCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordMapUpdatesCheckBox_clicked(bool)));
   connect(ui.recordViewpointsCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordViewpointsCheckBox_clicked(bool)));
   connect(ui.saveMapPushButton, SIGNAL(clicked()), this, SLOT(on_saveMapPushButton_clicked()));
+  connect(ui.loadMapPushButton, SIGNAL(clicked()), this, SLOT(on_loadMapPushButton_clicked()));
 
   //changePlannerModeClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::ChangePlannerMode>("/roi_viewpoint_planner/change_planner_mode");
   //activatePlanExecutionClient = getNodeHandle().serviceClient<std_srvs::SetBool>("/roi_viewpoint_planner/activate_plan_execution");
   saveOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveOctomap>("/roi_viewpoint_planner/save_octomap");
+  loadOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::LoadOctomap>("/roi_viewpoint_planner/load_octomap");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
 
@@ -626,6 +629,26 @@ void RoiViewpointPlannerRqtPlugin::on_saveMapPushButton_clicked()
   }
 }
 
+void RoiViewpointPlannerRqtPlugin::on_loadMapPushButton_clicked()
+{
+  QString file_path = QFileDialog::getOpenFileName(widget, QString(), QString(), "Octree (*.ot)");
+  if (file_path.isEmpty())
+    return;
+
+  roi_viewpoint_planner_msgs::LoadOctomap srv;
+  srv.request.filename = file_path.toStdString();
+  if (loadOctomapClient.call(srv))
+  {
+    if (srv.response.success)
+      ui.statusTextBox->setText("Map loaded successfully");
+    else
+      ui.statusTextBox->setText("Error loading map: " + QString::fromStdString(srv.response.error_message));
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call load map service");
+  }
+}
 
 } // namespace roi_viewpoint_planner_rqt_plugin
 
