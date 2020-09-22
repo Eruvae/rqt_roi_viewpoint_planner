@@ -7,7 +7,6 @@
 #include <QtGlobal>
 #include <QThread>
 #include <QFileDialog>
-#include <roi_viewpoint_planner_msgs/ChangePlannerMode.h>
 
 Q_DECLARE_METATYPE(roi_viewpoint_planner::PlannerConfig)
 Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
@@ -69,11 +68,12 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.recordViewpointsCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordViewpointsCheckBox_clicked(bool)));
   connect(ui.saveMapPushButton, SIGNAL(clicked()), this, SLOT(on_saveMapPushButton_clicked()));
   connect(ui.loadMapPushButton, SIGNAL(clicked()), this, SLOT(on_loadMapPushButton_clicked()));
+  connect(ui.moveToHomePushButton, SIGNAL(clicked()), this, SLOT(on_moveToHomePushButton_clicked()));
+  connect(ui.moveToTransportPushButton, SIGNAL(clicked()), this, SLOT(on_moveToTransportPushButton_clicked()));
 
-  //changePlannerModeClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::ChangePlannerMode>("/roi_viewpoint_planner/change_planner_mode");
-  //activatePlanExecutionClient = getNodeHandle().serviceClient<std_srvs::SetBool>("/roi_viewpoint_planner/activate_plan_execution");
   saveOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveOctomap>("/roi_viewpoint_planner/save_octomap");
   loadOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::LoadOctomap>("/roi_viewpoint_planner/load_octomap");
+  moveToStateClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::MoveToState>("/roi_viewpoint_planner/move_to_state");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
 
@@ -88,8 +88,6 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
 {
   // unregister all publishers here
-  //changePlannerModeClient.shutdown();
-  //activatePlanExecutionClient.shutdown();
   plannerStateSub.shutdown();
   confirmPlanExecutionServer.shutdown();
   saveOctomapClient.shutdown();
@@ -546,6 +544,8 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
   ui.velocityScalingSpinBox->setValue(received_config.velocity_scaling);
   ui.recordMapUpdatesCheckBox->setChecked(received_config.record_map_updates);
   ui.recordViewpointsCheckBox->setChecked(received_config.record_viewpoints);
+  ui.moveToHomePushButton->setEnabled(received_config.mode < 2);
+  ui.moveToTransportPushButton->setEnabled(received_config.mode < 2);
   current_config = received_config;
 }
 
@@ -647,6 +647,40 @@ void RoiViewpointPlannerRqtPlugin::on_loadMapPushButton_clicked()
   else
   {
     ui.statusTextBox->setText("Failed to call load map service");
+  }
+}
+
+void RoiViewpointPlannerRqtPlugin::on_moveToHomePushButton_clicked()
+{
+  roi_viewpoint_planner_msgs::MoveToState srv;
+  srv.request.joint_values = {0, -0.7854, 1.5708, -0.7854, 0, 0};
+  if (moveToStateClient.call(srv))
+  {
+    if (srv.response.success)
+      ui.statusTextBox->setText("Moving to home position");
+    else
+      ui.statusTextBox->setText("Couldn't plan to specified position");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call move to state service");
+  }
+}
+
+void RoiViewpointPlannerRqtPlugin::on_moveToTransportPushButton_clicked()
+{
+  roi_viewpoint_planner_msgs::MoveToState srv;
+  srv.request.joint_values = {0, 0, 0, 0, -1.5707, 0};
+  if (moveToStateClient.call(srv))
+  {
+    if (srv.response.success)
+      ui.statusTextBox->setText("Moving to transport position");
+    else
+      ui.statusTextBox->setText("Couldn't plan to specified position");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call move to state service");
   }
 }
 

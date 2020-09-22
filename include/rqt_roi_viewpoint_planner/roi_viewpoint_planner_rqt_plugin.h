@@ -9,6 +9,7 @@
 #include <roi_viewpoint_planner_msgs/PlannerState.h>
 #include <roi_viewpoint_planner_msgs/SaveOctomap.h>
 #include <roi_viewpoint_planner_msgs/LoadOctomap.h>
+#include <roi_viewpoint_planner_msgs/MoveToState.h>
 #include <std_srvs/Trigger.h>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
 
@@ -57,6 +58,8 @@ private slots:
   void on_recordViewpointsCheckBox_clicked(bool checked);
   void on_saveMapPushButton_clicked();
   void on_loadMapPushButton_clicked();
+  void on_moveToHomePushButton_clicked();
+  void on_moveToTransportPushButton_clicked();
 
   // Internal slots
   void configChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
@@ -73,10 +76,9 @@ private:
   Ui::RoiViewpointPlannerRqtPlugin ui;
   QWidget* widget;
   roi_viewpoint_planner::PlannerConfig current_config;
-  //ros::ServiceClient changePlannerModeClient;
-  //ros::ServiceClient activatePlanExecutionClient;
   ros::ServiceClient saveOctomapClient;
   ros::ServiceClient loadOctomapClient;
+  ros::ServiceClient moveToStateClient;
 
   ros::Subscriber plannerStateSub;
 

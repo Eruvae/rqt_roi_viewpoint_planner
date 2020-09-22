@@ -14,7 +14,83 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" rowspan="4">
+   <item row="6" column="0" colspan="2">
+    <widget class="QLineEdit" name="statusTextBox"/>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="loadMapPushButton">
+     <property name="text">
+      <string>Load map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QPushButton" name="saveMapPushButton">
+     <property name="text">
+      <string>Save map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="plannerStateGroupBox">
+     <property name="title">
+      <string>Planner State</string>
+     </property>
+     <widget class="QWidget" name="formLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>101</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="plannerStateLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="planningLabel">
+         <property name="text">
+          <string>Planning</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="LedIndicator" name="planningLed" native="true"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="movingLabel">
+         <property name="text">
+          <string>Moving</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="LedIndicator" name="movingLed" native="true"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="occScanLabel">
+         <property name="text">
+          <string>Occ-Scan</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="LedIndicator" name="occScanLed" native="true"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="roiScanLabel">
+         <property name="text">
+          <string>ROI-Scan</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="LedIndicator" name="roiScanLed" native="true"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="0" column="0" rowspan="6">
     <layout class="QFormLayout" name="configLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="modeLabel">
@@ -461,63 +537,11 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="1">
-    <widget class="QGroupBox" name="plannerStateGroupBox">
-     <property name="title">
-      <string>Planner State</string>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="moveToHomePushButton">
+     <property name="text">
+      <string>Move to home</string>
      </property>
-     <widget class="QWidget" name="formLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>30</y>
-        <width>101</width>
-        <height>101</height>
-       </rect>
-      </property>
-      <layout class="QFormLayout" name="plannerStateLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="planningLabel">
-         <property name="text">
-          <string>Planning</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="LedIndicator" name="planningLed" native="true"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="movingLabel">
-         <property name="text">
-          <string>Moving</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="LedIndicator" name="movingLed" native="true"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="occScanLabel">
-         <property name="text">
-          <string>Occ-Scan</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="LedIndicator" name="occScanLed" native="true"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="roiScanLabel">
-         <property name="text">
-          <string>ROI-Scan</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="LedIndicator" name="roiScanLed" native="true"/>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
    <item row="1" column="1">
@@ -555,21 +579,11 @@
     </layout>
    </item>
    <item row="2" column="1">
-    <widget class="QPushButton" name="loadMapPushButton">
+    <widget class="QPushButton" name="moveToTransportPushButton">
      <property name="text">
-      <string>Load map</string>
+      <string>Move to transport</string>
      </property>
     </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QPushButton" name="saveMapPushButton">
-     <property name="text">
-      <string>Save map</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QLineEdit" name="statusTextBox"/>
    </item>
   </layout>
  </widget>
