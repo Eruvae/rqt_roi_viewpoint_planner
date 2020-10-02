@@ -14,23 +14,6 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="6" column="0" colspan="2">
-    <widget class="QLineEdit" name="statusTextBox"/>
-   </item>
-   <item row="4" column="1">
-    <widget class="QPushButton" name="loadMapPushButton">
-     <property name="text">
-      <string>Load map</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QPushButton" name="saveMapPushButton">
-     <property name="text">
-      <string>Save map</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QGroupBox" name="plannerStateGroupBox">
      <property name="title">
@@ -90,7 +73,7 @@
      </widget>
     </widget>
    </item>
-   <item row="0" column="0" rowspan="6">
+   <item row="0" column="0" rowspan="7">
     <layout class="QFormLayout" name="configLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="modeLabel">
@@ -118,12 +101,22 @@
        </item>
        <item>
         <property name="text">
+         <string>ROI contour sampling</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ROI adjacent</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>ROI center sampling</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>ROI contour sampling</string>
+         <string>Exploration sampling</string>
         </property>
        </item>
        <item>
@@ -134,16 +127,6 @@
        <item>
         <property name="text">
          <string>Border sampling</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>ROI adjacent</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Exploration sampling</string>
         </property>
        </item>
       </widget>
@@ -537,10 +520,34 @@
      </item>
     </layout>
    </item>
+   <item row="6" column="1">
+    <widget class="QPushButton" name="saveMapPushButton">
+     <property name="text">
+      <string>Save map</string>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="1">
     <widget class="QPushButton" name="moveToHomePushButton">
      <property name="text">
       <string>Move to home</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <widget class="QLineEdit" name="statusTextBox"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="moveToTransportPushButton">
+     <property name="text">
+      <string>Move to transport</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QPushButton" name="loadMapPushButton">
+     <property name="text">
+      <string>Load map</string>
      </property>
     </widget>
    </item>
@@ -578,10 +585,10 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="1">
-    <widget class="QPushButton" name="moveToTransportPushButton">
+   <item row="4" column="1">
+    <widget class="QPushButton" name="resetMapPushButton">
      <property name="text">
-      <string>Move to transport</string>
+      <string>Reset map</string>
      </property>
     </widget>
    </item>

@@ -68,11 +68,13 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.recordViewpointsCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordViewpointsCheckBox_clicked(bool)));
   connect(ui.saveMapPushButton, SIGNAL(clicked()), this, SLOT(on_saveMapPushButton_clicked()));
   connect(ui.loadMapPushButton, SIGNAL(clicked()), this, SLOT(on_loadMapPushButton_clicked()));
+  connect(ui.resetMapPushButton, SIGNAL(clicked()), this, SLOT(on_resetMapPushButton_clicked()));
   connect(ui.moveToHomePushButton, SIGNAL(clicked()), this, SLOT(on_moveToHomePushButton_clicked()));
   connect(ui.moveToTransportPushButton, SIGNAL(clicked()), this, SLOT(on_moveToTransportPushButton_clicked()));
 
   saveOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveOctomap>("/roi_viewpoint_planner/save_octomap");
   loadOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::LoadOctomap>("/roi_viewpoint_planner/load_octomap");
+  resetOctomapClient = getNodeHandle().serviceClient<std_srvs::Empty>("/roi_viewpoint_planner/reset_octomap");
   moveToStateClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::MoveToState>("/roi_viewpoint_planner/move_to_state");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
@@ -643,6 +645,24 @@ void RoiViewpointPlannerRqtPlugin::on_loadMapPushButton_clicked()
       ui.statusTextBox->setText("Map loaded successfully");
     else
       ui.statusTextBox->setText("Error loading map: " + QString::fromStdString(srv.response.error_message));
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call load map service");
+  }
+}
+
+void RoiViewpointPlannerRqtPlugin::on_resetMapPushButton_clicked()
+{
+  QMessageBox::StandardButton reply;
+  reply = QMessageBox::question(widget, "Confirm reset", "Do you really want to delete the current map?", QMessageBox::Yes|QMessageBox::No);
+  if (reply == QMessageBox::No)
+    return;
+
+  std_srvs::Empty srv;
+  if (resetOctomapClient.call(srv))
+  {
+    ui.statusTextBox->setText("Map reset successfully");
   }
   else
   {
