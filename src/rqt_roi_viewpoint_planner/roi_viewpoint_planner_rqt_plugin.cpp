@@ -66,6 +66,16 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.velocityScalingSpinBox, SIGNAL(editingFinished()), this, SLOT(on_velocityScalingSpinBox_editingFinished()));
   connect(ui.recordMapUpdatesCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordMapUpdatesCheckBox_clicked(bool)));
   connect(ui.recordViewpointsCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordViewpointsCheckBox_clicked(bool)));
+  connect(ui.autoROISamplingComboBox, SIGNAL(activated(int)), this, SLOT(on_autoROISamplingComboBox_activated(int)));
+  connect(ui.autoExplSamplingComboBox, SIGNAL(activated(int)), this, SLOT(on_autoExplSamplingComboBox_activated(int)));
+  connect(ui.activateM2SCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_activateM2SCheckBox_clicked(bool)));
+  connect(ui.m2SExclusiveCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_m2SExclusiveCheckBox_clicked(bool)));
+  connect(ui.m2sDeltaThreshSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_m2sDeltaThreshSlider_sliderMoved(int)));
+  connect(ui.m2sDeltaThreshSlider, SIGNAL(sliderReleased()), this, SLOT(on_m2sDeltaThreshSlider_sliderReleased()));
+  connect(ui.m2sDeltaThreshSpinBox, SIGNAL(editingFinished()), this, SLOT(on_m2sDeltaThreshSpinBox_editingFinished()));
+  connect(ui.m2sMaxStepsSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_m2sMaxStepsSlider_sliderMoved(int)));
+  connect(ui.m2sMaxStepsSlider, SIGNAL(sliderReleased()), this, SLOT(on_m2sMaxStepsSlider_sliderReleased()));
+  connect(ui.m2sMaxStepsSpinBox, SIGNAL(editingFinished()), this, SLOT(on_m2sMaxStepsSpinBox_editingFinished()));
   connect(ui.saveMapPushButton, SIGNAL(clicked()), this, SLOT(on_saveMapPushButton_clicked()));
   connect(ui.loadMapPushButton, SIGNAL(clicked()), this, SLOT(on_loadMapPushButton_clicked()));
   connect(ui.resetMapPushButton, SIGNAL(clicked()), this, SLOT(on_resetMapPushButton_clicked()));
@@ -430,7 +440,7 @@ void RoiViewpointPlannerRqtPlugin::on_velocityScalingSlider_sliderReleased()
 
 void RoiViewpointPlannerRqtPlugin::on_velocityScalingSpinBox_editingFinished()
 {
-  velocityScalingSlider_setValue(ui.planningTimeSpinBox->value());
+  velocityScalingSlider_setValue(ui.velocityScalingSpinBox->value());
   velocityScaling_sendConfig();
 }
 
@@ -454,6 +464,134 @@ void RoiViewpointPlannerRqtPlugin::on_recordViewpointsCheckBox_clicked(bool chec
     return;
   }
   ui.statusTextBox->setText("Record viewpoints change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_autoROISamplingComboBox_activated(int index)
+{
+    current_config.auto_roi_sampling = index + 3;
+    if (!configClient->setConfiguration(current_config))
+    {
+      ui.statusTextBox->setText("Mode change failed");
+      return;
+    }
+    ui.statusTextBox->setText("Mode change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_autoExplSamplingComboBox_activated(int index)
+{
+    current_config.auto_expl_sampling = index + 6;
+    if (!configClient->setConfiguration(current_config))
+    {
+      ui.statusTextBox->setText("Mode change failed");
+      return;
+    }
+    ui.statusTextBox->setText("Mode change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_activateM2SCheckBox_clicked(bool checked)
+{
+    current_config.activate_move_to_see = checked;
+    if (!configClient->setConfiguration(current_config))
+    {
+      ui.statusTextBox->setText("Activate M2S change failed");
+      return;
+    }
+    ui.statusTextBox->setText("Activate M2S change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_m2SExclusiveCheckBox_clicked(bool checked)
+{
+    current_config.move_to_see_exclusive = checked;
+    if (!configClient->setConfiguration(current_config))
+    {
+      ui.statusTextBox->setText("M2S Exclusive change failed");
+      return;
+    }
+    ui.statusTextBox->setText("M2S Exclusive change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::m2sDeltaThreshSlider_setValue(double value)
+{
+  double minVal = ui.m2sDeltaThreshMin->text().toDouble();
+  double maxVal = ui.m2sDeltaThreshMax->text().toDouble();
+  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
+  ui.m2sDeltaThreshSlider->setValue(position);
+}
+
+void RoiViewpointPlannerRqtPlugin::m2sDeltaThreshSpinBox_setPosition(int position)
+{
+  double minVal = ui.m2sDeltaThreshMin->text().toDouble();
+  double maxVal = ui.m2sDeltaThreshMax->text().toDouble();
+  ui.m2sDeltaThreshSpinBox->setValue(minVal + (double)position / 100.0 * (maxVal - minVal));
+}
+
+void RoiViewpointPlannerRqtPlugin::m2sDeltaThresh_sendConfig()
+{
+  current_config.m2s_delta_thresh = ui.m2sDeltaThreshSpinBox->value();
+  if (!configClient->setConfiguration(current_config))
+  {
+    ui.statusTextBox->setText("M2S Delta Thresh change failed");
+    return;
+  }
+  ui.statusTextBox->setText("M2S Delta Thresh change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_m2sDeltaThreshSlider_sliderMoved(int position)
+{
+  m2sDeltaThreshSpinBox_setPosition(position);
+}
+
+void RoiViewpointPlannerRqtPlugin::on_m2sDeltaThreshSlider_sliderReleased()
+{
+  m2sDeltaThresh_sendConfig();
+}
+
+void RoiViewpointPlannerRqtPlugin::on_m2sDeltaThreshSpinBox_editingFinished()
+{
+  m2sDeltaThreshSlider_setValue(ui.m2sDeltaThreshSpinBox->value());
+  m2sDeltaThresh_sendConfig();
+}
+
+void RoiViewpointPlannerRqtPlugin::m2sMaxStepsSlider_setValue(int value)
+{
+  double minVal = ui.m2sMaxStepsMin->text().toDouble();
+  double maxVal = ui.m2sMaxStepsMax->text().toDouble();
+  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
+  ui.m2sMaxStepsSlider->setValue(position);
+}
+
+void RoiViewpointPlannerRqtPlugin::m2sMaxStepsSpinBox_setPosition(int position)
+{
+  double minVal = ui.m2sMaxStepsMin->text().toDouble();
+  double maxVal = ui.m2sMaxStepsMax->text().toDouble();
+  ui.m2sMaxStepsSpinBox->setValue((int)(minVal + (double)position / 100.0 * (maxVal - minVal)));
+}
+
+void RoiViewpointPlannerRqtPlugin::m2sMaxSteps_sendConfig()
+{
+  current_config.m2s_max_steps = ui.m2sMaxStepsSpinBox->value();
+  if (!configClient->setConfiguration(current_config))
+  {
+    ui.statusTextBox->setText("M2S Delta Thresh change failed");
+    return;
+  }
+  ui.statusTextBox->setText("M2S Delta Thresh change successful");
+}
+
+void RoiViewpointPlannerRqtPlugin::on_m2sMaxStepsSlider_sliderMoved(int position)
+{
+  m2sMaxStepsSpinBox_setPosition(position);
+}
+
+void RoiViewpointPlannerRqtPlugin::on_m2sMaxStepsSlider_sliderReleased()
+{
+  m2sMaxSteps_sendConfig();
+}
+
+void RoiViewpointPlannerRqtPlugin::on_m2sMaxStepsSpinBox_editingFinished()
+{
+  m2sMaxStepsSlider_setValue(ui.m2sMaxStepsSpinBox->value());
+  m2sMaxSteps_sendConfig();
 }
 
 void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
@@ -546,6 +684,14 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
   ui.velocityScalingSpinBox->setValue(received_config.velocity_scaling);
   ui.recordMapUpdatesCheckBox->setChecked(received_config.record_map_updates);
   ui.recordViewpointsCheckBox->setChecked(received_config.record_viewpoints);
+  ui.autoROISamplingComboBox->setCurrentIndex(received_config.auto_roi_sampling - 3);
+  ui.autoExplSamplingComboBox->setCurrentIndex(received_config.auto_expl_sampling - 6);
+  ui.activateM2SCheckBox->setChecked(received_config.activate_move_to_see);
+  ui.m2SExclusiveCheckBox->setChecked(received_config.move_to_see_exclusive);
+  m2sDeltaThreshSlider_setValue(received_config.m2s_delta_thresh);
+  ui.m2sDeltaThreshSpinBox->setValue(received_config.m2s_delta_thresh);
+  m2sMaxStepsSlider_setValue(received_config.m2s_max_steps);
+  ui.m2sMaxStepsSpinBox->setValue(received_config.m2s_max_steps);
   ui.moveToHomePushButton->setEnabled(received_config.mode < 2);
   ui.moveToTransportPushButton->setEnabled(received_config.mode < 2);
   current_config = received_config;

@@ -57,6 +57,16 @@ private slots:
   void on_velocityScalingSpinBox_editingFinished();
   void on_recordMapUpdatesCheckBox_clicked(bool checked);
   void on_recordViewpointsCheckBox_clicked(bool checked);
+  void on_autoROISamplingComboBox_activated(int index);
+  void on_autoExplSamplingComboBox_activated(int index);
+  void on_activateM2SCheckBox_clicked(bool checked);
+  void on_m2SExclusiveCheckBox_clicked(bool checked);
+  void on_m2sDeltaThreshSlider_sliderMoved(int position);
+  void on_m2sDeltaThreshSlider_sliderReleased();
+  void on_m2sDeltaThreshSpinBox_editingFinished();
+  void on_m2sMaxStepsSlider_sliderMoved(int position);
+  void on_m2sMaxStepsSlider_sliderReleased();
+  void on_m2sMaxStepsSpinBox_editingFinished();
   void on_saveMapPushButton_clicked();
   void on_loadMapPushButton_clicked();
   void on_resetMapPushButton_clicked();
@@ -106,6 +116,12 @@ private:
   void velocityScalingSlider_setValue(double value);
   void velocityScalingSpinBox_setPosition(int position);
   void velocityScaling_sendConfig();
+  void m2sDeltaThreshSlider_setValue(double value);
+  void m2sDeltaThreshSpinBox_setPosition(int position);
+  void m2sDeltaThresh_sendConfig();
+  void m2sMaxStepsSlider_setValue(int value);
+  void m2sMaxStepsSpinBox_setPosition(int position);
+  void m2sMaxSteps_sendConfig();
 };
 
 }
