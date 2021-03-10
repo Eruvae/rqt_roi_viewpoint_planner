@@ -7,6 +7,7 @@
 #include <QtGlobal>
 #include <QThread>
 #include <QFileDialog>
+#include <yaml-cpp/yaml.h>
 
 Q_DECLARE_METATYPE(roi_viewpoint_planner::PlannerConfig)
 Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
@@ -73,6 +74,7 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.m2sDeltaThreshSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_m2sDeltaThreshSlider_sliderMoved(int)));
   connect(ui.m2sDeltaThreshSlider, SIGNAL(sliderReleased()), this, SLOT(on_m2sDeltaThreshSlider_sliderReleased()));
   connect(ui.m2sDeltaThreshSpinBox, SIGNAL(editingFinished()), this, SLOT(on_m2sDeltaThreshSpinBox_editingFinished()));
+
   connect(ui.m2sMaxStepsSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_m2sMaxStepsSlider_sliderMoved(int)));
   connect(ui.m2sMaxStepsSlider, SIGNAL(sliderReleased()), this, SLOT(on_m2sMaxStepsSlider_sliderReleased()));
   connect(ui.m2sMaxStepsSpinBox, SIGNAL(editingFinished()), this, SLOT(on_m2sMaxStepsSpinBox_editingFinished()));
@@ -95,6 +97,166 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
                  boost::bind(&RoiViewpointPlannerRqtPlugin::configCallback, this, _1));
 
   //ROS_INFO_STREAM("Init is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+
+  initConfigGui();
+}
+
+void RoiViewpointPlannerRqtPlugin::initConfigGui()
+{
+    const std::vector<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr> &params = roi_viewpoint_planner::PlannerConfig::__getParamDescriptions__();
+    //const std::vector<roi_viewpoint_planner::PlannerConfig::AbstractGroupDescriptionConstPtr> &groups = roi_viewpoint_planner::PlannerConfig::__getGroupDescriptions__();
+    const roi_viewpoint_planner::PlannerConfig &config_def = roi_viewpoint_planner::PlannerConfig::__getDefault__();
+    const roi_viewpoint_planner::PlannerConfig &config_min = roi_viewpoint_planner::PlannerConfig::__getMin__();
+    const roi_viewpoint_planner::PlannerConfig &config_max = roi_viewpoint_planner::PlannerConfig::__getMax__();
+    for (const roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr &param : params)
+    {
+        parameter_map[param->name] = param;
+        boost::any val, min, max;
+        param->getValue(config_def, val);
+        param->getValue(config_max, max);
+        param->getValue(config_min, min);
+        if (param->edit_method != "") // param is enum
+        {
+            initEnumParam(param->name, param->edit_method, param->type, val);
+        }
+        else if (param->type == "bool")
+        {
+            initBoolParam(param->name, boost::any_cast<bool>(val));
+        }
+        else if (param->type == "int")
+        {
+            initIntParam(param->name, boost::any_cast<int>(val), boost::any_cast<int>(min), boost::any_cast<int>(max));
+        }
+        else if (param->type == "double")
+        {
+            initDoubleParam(param->name, boost::any_cast<double>(val), boost::any_cast<double>(min), boost::any_cast<double>(max));
+        }
+        else if (param->type == "str")
+        {
+            initStringParam(param->name, boost::any_cast<std::string>(val));
+        }
+        else
+        {
+            ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
+        }
+        //ROS_INFO_STREAM("Found param " << param->name << " of type " << param->type);
+    }
+    /*for (const roi_viewpoint_planner::PlannerConfig::AbstractGroupDescriptionConstPtr &group : groups)
+    {
+        ROS_INFO_STREAM("Found group " << group->name);
+        for (const auto &param : group->parameters)
+        {
+            ROS_INFO_STREAM("Found param " << param.name << " of type " << param.type << " in group " << group->name);
+        }
+    }*/
+
+}
+
+void RoiViewpointPlannerRqtPlugin::initEnumParam(const std::string &name, const std::string &enum_description_str, const std::string &type, const boost::any &val)
+{
+    QComboBox *cb = new QComboBox();
+    ROS_INFO_STREAM("Enum description: " << enum_description_str);
+    YAML::Node enum_description = YAML::Load(enum_description_str);
+    for (const YAML::Node &node : enum_description["enum"])
+    {
+        QString entry_name = QString::fromStdString(node["name"].as<std::string>());
+        QVariant userdata;
+        if (type == "bool")
+        {
+            userdata = QVariant(node["value"].as<bool>());
+        }
+        else if (type == "int")
+        {
+            userdata = QVariant(node["value"].as<int>());
+        }
+        else if (type == "double")
+        {
+            userdata = QVariant(node["value"].as<double>());
+        }
+        else if (type == "str")
+        {
+            userdata = QVariant(QString::fromStdString(node["value"].as<std::string>()));
+        }
+        entry_name += QString(" (") + userdata.toString() + QString(")");
+        cb->addItem(entry_name, userdata);
+    }
+
+    QVariant default_val;
+    if (type == "bool")
+    {
+        default_val = QVariant(boost::any_cast<bool>(val));
+    }
+    else if (type == "int")
+    {
+        default_val = QVariant(boost::any_cast<int>(val));
+    }
+    else if (type == "double")
+    {
+        default_val = QVariant(boost::any_cast<double>(val));
+    }
+    else if (type == "str")
+    {
+        default_val = QVariant(QString::fromStdString(boost::any_cast<std::string>(val)));
+    }
+    int default_index = cb->findData(default_val);
+    if (default_index >= 0)
+        cb->setCurrentIndex(default_index);
+
+    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), cb);
+}
+
+void RoiViewpointPlannerRqtPlugin::initBoolParam(const std::string &name, bool val)
+{
+    QCheckBox *cb = new QCheckBox();
+    cb->setChecked(val);
+    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), cb);
+}
+
+void RoiViewpointPlannerRqtPlugin::initIntParam(const std::string &name, int val, int min, int max)
+{
+    QHBoxLayout *layout = new QHBoxLayout();
+    QLabel *minLabel = new QLabel(QString::number(min));
+    QLabel *maxLabel = new QLabel(QString::number(max));
+    QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
+    slider->setMaximum(100);
+    QSpinBox *spinBox = new QSpinBox();
+    layout->addWidget(minLabel);
+    layout->addWidget(slider);
+    layout->addWidget(maxLabel);
+    layout->addWidget(spinBox);
+
+    connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved, this, spinBox, name, _1));
+    connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased, this, spinBox, name));
+    connect(spinBox, &QSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished, this, spinBox, slider, name));
+
+    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), layout);
+}
+
+void RoiViewpointPlannerRqtPlugin::initDoubleParam(const std::string &name, double val, double min, double max)
+{
+    QHBoxLayout *layout = new QHBoxLayout();
+    QLabel *minLabel = new QLabel(QString::number(min));
+    QLabel *maxLabel = new QLabel(QString::number(max));
+    QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
+    slider->setMaximum(100);
+    QDoubleSpinBox *spinBox = new QDoubleSpinBox();
+    layout->addWidget(minLabel);
+    layout->addWidget(slider);
+    layout->addWidget(maxLabel);
+    layout->addWidget(spinBox);
+
+    connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved, this, spinBox, name, _1));
+    connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased, this, spinBox, name));
+    connect(spinBox, &QDoubleSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished, this, spinBox, slider, name));
+
+    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), layout);
+}
+
+void RoiViewpointPlannerRqtPlugin::initStringParam(const std::string &name, const std::string &val)
+{
+    QLineEdit *le = new QLineEdit();
+    le->setText(QString::fromStdString(val));
+    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), le);
 }
 
 void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
@@ -160,94 +322,88 @@ void RoiViewpointPlannerRqtPlugin::on_requireConfirmationCheckBox_clicked(bool c
   ui.statusTextBox->setText("Require plan change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::minRangeSlider_setValue(double value)
+void RoiViewpointPlannerRqtPlugin::intSlider_setValue(QSlider *slider, const std::string &param, int value)
 {
-  double minVal = ui.minRangeMin->text().toDouble();
-  double maxVal = ui.minRangeMax->text().toDouble();
-  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
-  ui.minRangeSlider->setValue(position);
+  int minVal = getMin<int>(param);
+  int maxVal = getMax<int>(param);
+  int position = qBound(0, static_cast<int>(static_cast<double>(value - minVal) / static_cast<double>(maxVal - minVal) * 100.0), 100);
+  slider->setValue(position);
 }
 
-void RoiViewpointPlannerRqtPlugin::minRangeSpinBox_setPosition(int position)
+void RoiViewpointPlannerRqtPlugin::intSpinBox_setPosition(QSpinBox *spinBox, const std::string &param, int position)
 {
-  double minVal = ui.minRangeMin->text().toDouble();
-  double maxVal = ui.minRangeMax->text().toDouble();
-  ui.minRangeSpinBox->setValue(minVal + (double)position / 100.0 * (maxVal - minVal));
+  int minVal = getMin<int>(param);
+  int maxVal = getMax<int>(param);
+  spinBox->setValue(minVal + position * (maxVal - minVal) / 100);
 }
 
-void RoiViewpointPlannerRqtPlugin::minRange_sendConfig()
+void RoiViewpointPlannerRqtPlugin::intValue_sendConfig(QSpinBox *spinBox, const std::string &param)
 {
-  current_config.sensor_min_range = ui.minRangeSpinBox->value();
+  setValue<int>(param, spinBox->value());
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Min range change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Min range change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::on_minRangeSlider_sliderMoved(int position)
+void RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved(QSpinBox *spinBox, const std::string &param, int position)
 {
-  ROS_INFO("MinRange slider moved");
-  minRangeSpinBox_setPosition(position);
+  intSpinBox_setPosition(spinBox, param, position);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_minRangeSlider_sliderReleased()
+void RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased(QSpinBox *spinBox, const std::string &param)
 {
-  ROS_INFO("MinRange slider released");
-  minRange_sendConfig();
+  intValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_minRangeSpinBox_editingFinished()
+void RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished(QSpinBox *spinBox, QSlider *slider, const std::string &param)
 {
-  ROS_INFO("MinRange edit finished");
-  minRangeSlider_setValue(ui.minRangeSpinBox->value());
-  minRange_sendConfig();
+  intSlider_setValue(slider, param, spinBox->value());
+  intValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::maxRangeSlider_setValue(double value)
+void RoiViewpointPlannerRqtPlugin::doubleSlider_setValue(QSlider *slider, const std::string &param, double value)
 {
-  double minVal = ui.maxRangeMin->text().toDouble();
-  double maxVal = ui.maxRangeMax->text().toDouble();
-  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
-  ui.maxRangeSlider->setValue(position);
+  double minVal = getMin<double>(param);
+  double maxVal = getMax<double>(param);
+  int position = qBound(0, static_cast<int>((value - minVal) / (maxVal - minVal) * 100.0), 100);
+  slider->setValue(position);
 }
 
-void RoiViewpointPlannerRqtPlugin::maxRangeSpinBox_setPosition(int position)
+void RoiViewpointPlannerRqtPlugin::doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const std::string &param, int position)
 {
-  double minVal = ui.maxRangeMin->text().toDouble();
-  double maxVal = ui.maxRangeMax->text().toDouble();
-  ui.maxRangeSpinBox->setValue(minVal + (double)position / 100.0 * (maxVal - minVal));
+  double minVal = getMin<double>(param);
+  double maxVal = getMax<double>(param);
+  spinBox->setValue(minVal + static_cast<double>(position) / 100.0 * (maxVal - minVal));
 }
 
-void RoiViewpointPlannerRqtPlugin::maxRange_sendConfig()
+void RoiViewpointPlannerRqtPlugin::doubleValue_sendConfig(QDoubleSpinBox *spinBox, const std::string &param)
 {
-  current_config.sensor_max_range = ui.maxRangeSpinBox->value();
+  setValue<double>(param, spinBox->value());
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Max range change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Max range change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::on_maxRangeSlider_sliderMoved(int position)
+void RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const std::string &param, int position)
 {
-  ROS_INFO("MaxRange slider moved");
-  maxRangeSpinBox_setPosition(position);
+  doubleSpinBox_setPosition(spinBox, param, position);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_maxRangeSlider_sliderReleased()
+void RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased(QDoubleSpinBox *spinBox, const std::string &param)
 {
-  ROS_INFO("MaxRange slider released");
-  maxRange_sendConfig();
+  doubleValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_maxRangeSpinBox_editingFinished()
+void RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished(QDoubleSpinBox *spinBox, QSlider *slider, const std::string &param)
 {
-  ROS_INFO("MaxRange edit finished");
-  maxRangeSlider_setValue(ui.maxRangeSpinBox->value());
-  maxRange_sendConfig();
+  doubleSlider_setValue(slider, param, spinBox->value());
+  doubleValue_sendConfig(spinBox, param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_insertOccIfNotMovedCheckBox_clicked(bool checked)
@@ -338,48 +494,6 @@ void RoiViewpointPlannerRqtPlugin::on_plannerComboBox_activated(QString planner_
   ui.statusTextBox->setText("Planner change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::planningTimeSlider_setValue(double value)
-{
-  double minVal = ui.planningTimeMin->text().toDouble();
-  double maxVal = ui.planningTimeMax->text().toDouble();
-  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
-  ui.planningTimeSlider->setValue(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::planningTimeSpinBox_setPosition(int position)
-{
-  double minVal = ui.planningTimeMin->text().toDouble();
-  double maxVal = ui.planningTimeMax->text().toDouble();
-  ui.planningTimeSpinBox->setValue(minVal + (double)position / 100.0 * (maxVal - minVal));
-}
-
-void RoiViewpointPlannerRqtPlugin::planningTime_sendConfig()
-{
-  current_config.planning_time = ui.planningTimeSpinBox->value();
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Planning time change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Planning time change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_planningTimeSlider_sliderMoved(int position)
-{
-  planningTimeSpinBox_setPosition(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::on_planningTimeSlider_sliderReleased()
-{
-  planningTime_sendConfig();
-}
-
-void RoiViewpointPlannerRqtPlugin::on_planningTimeSpinBox_editingFinished()
-{
-  planningTimeSlider_setValue(ui.planningTimeSpinBox->value());
-  planningTime_sendConfig();
-}
-
 void RoiViewpointPlannerRqtPlugin::on_useCartesianMotionCheckBox_clicked(bool checked)
 {
   current_config.use_cartesian_motion = checked;
@@ -400,48 +514,6 @@ void RoiViewpointPlannerRqtPlugin::on_computeIkWhenSamplingCheckBox_clicked(bool
     return;
   }
   ui.statusTextBox->setText("Compute IK when sampling change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::velocityScalingSlider_setValue(double value)
-{
-  double minVal = ui.velocityScalingMin->text().toDouble();
-  double maxVal = ui.velocityScalingMax->text().toDouble();
-  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
-  ui.velocityScalingSlider->setValue(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::velocityScalingSpinBox_setPosition(int position)
-{
-  double minVal = ui.velocityScalingMin->text().toDouble();
-  double maxVal = ui.velocityScalingMax->text().toDouble();
-  ui.velocityScalingSpinBox->setValue(minVal + (double)position / 100.0 * (maxVal - minVal));
-}
-
-void RoiViewpointPlannerRqtPlugin::velocityScaling_sendConfig()
-{
-  current_config.velocity_scaling = ui.velocityScalingSpinBox->value();
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Velocity scaling change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Velocity scaling change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_velocityScalingSlider_sliderMoved(int position)
-{
-  velocityScalingSpinBox_setPosition(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::on_velocityScalingSlider_sliderReleased()
-{
-  velocityScaling_sendConfig();
-}
-
-void RoiViewpointPlannerRqtPlugin::on_velocityScalingSpinBox_editingFinished()
-{
-  velocityScalingSlider_setValue(ui.velocityScalingSpinBox->value());
-  velocityScaling_sendConfig();
 }
 
 void RoiViewpointPlannerRqtPlugin::on_recordMapUpdatesCheckBox_clicked(bool checked)
@@ -510,157 +582,9 @@ void RoiViewpointPlannerRqtPlugin::on_m2SExclusiveCheckBox_clicked(bool checked)
     ui.statusTextBox->setText("M2S Exclusive change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::m2sDeltaThreshSlider_setValue(double value)
-{
-  double minVal = ui.m2sDeltaThreshMin->text().toDouble();
-  double maxVal = ui.m2sDeltaThreshMax->text().toDouble();
-  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
-  ui.m2sDeltaThreshSlider->setValue(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::m2sDeltaThreshSpinBox_setPosition(int position)
-{
-  double minVal = ui.m2sDeltaThreshMin->text().toDouble();
-  double maxVal = ui.m2sDeltaThreshMax->text().toDouble();
-  ui.m2sDeltaThreshSpinBox->setValue(minVal + (double)position / 100.0 * (maxVal - minVal));
-}
-
-void RoiViewpointPlannerRqtPlugin::m2sDeltaThresh_sendConfig()
-{
-  current_config.m2s_delta_thresh = ui.m2sDeltaThreshSpinBox->value();
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("M2S Delta Thresh change failed");
-    return;
-  }
-  ui.statusTextBox->setText("M2S Delta Thresh change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_m2sDeltaThreshSlider_sliderMoved(int position)
-{
-  m2sDeltaThreshSpinBox_setPosition(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::on_m2sDeltaThreshSlider_sliderReleased()
-{
-  m2sDeltaThresh_sendConfig();
-}
-
-void RoiViewpointPlannerRqtPlugin::on_m2sDeltaThreshSpinBox_editingFinished()
-{
-  m2sDeltaThreshSlider_setValue(ui.m2sDeltaThreshSpinBox->value());
-  m2sDeltaThresh_sendConfig();
-}
-
-void RoiViewpointPlannerRqtPlugin::m2sMaxStepsSlider_setValue(int value)
-{
-  double minVal = ui.m2sMaxStepsMin->text().toDouble();
-  double maxVal = ui.m2sMaxStepsMax->text().toDouble();
-  int position = qBound(0, (int)((value - minVal) / (maxVal - minVal) * 100.0), 100);
-  ui.m2sMaxStepsSlider->setValue(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::m2sMaxStepsSpinBox_setPosition(int position)
-{
-  double minVal = ui.m2sMaxStepsMin->text().toDouble();
-  double maxVal = ui.m2sMaxStepsMax->text().toDouble();
-  ui.m2sMaxStepsSpinBox->setValue((int)(minVal + (double)position / 100.0 * (maxVal - minVal)));
-}
-
-void RoiViewpointPlannerRqtPlugin::m2sMaxSteps_sendConfig()
-{
-  current_config.m2s_max_steps = ui.m2sMaxStepsSpinBox->value();
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("M2S Delta Thresh change failed");
-    return;
-  }
-  ui.statusTextBox->setText("M2S Delta Thresh change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_m2sMaxStepsSlider_sliderMoved(int position)
-{
-  m2sMaxStepsSpinBox_setPosition(position);
-}
-
-void RoiViewpointPlannerRqtPlugin::on_m2sMaxStepsSlider_sliderReleased()
-{
-  m2sMaxSteps_sendConfig();
-}
-
-void RoiViewpointPlannerRqtPlugin::on_m2sMaxStepsSpinBox_editingFinished()
-{
-  m2sMaxStepsSlider_setValue(ui.m2sMaxStepsSpinBox->value());
-  m2sMaxSteps_sendConfig();
-}
-
 void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
 {
-  ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
-  /*if (received_config.mode != current_config.mode)
-  {
-    ui.modeComboBox->setCurrentIndex(received_config.mode);
-  }
-  if (received_config.activate_execution != current_config.activate_execution)
-  {
-    ui.activateExecutionCheckBox->setChecked(received_config.activate_execution);
-  }
-  if (received_config.require_execution_confirmation != current_config.require_execution_confirmation)
-  {
-    ui.requireConfirmationCheckBox->setChecked(received_config.require_execution_confirmation);
-  }
-  if (received_config.sensor_min_range != current_config.sensor_min_range)
-  {
-    minRangeSlider_setValue(received_config.sensor_min_range);
-    ui.minRangeSpinBox->setValue(received_config.sensor_min_range);
-  }
-  if (received_config.sensor_max_range != current_config.sensor_max_range)
-  {
-    maxRangeSlider_setValue(received_config.sensor_max_range);
-    ui.maxRangeSpinBox->setValue(received_config.sensor_max_range);
-  }
-  if (received_config.insert_occ_if_not_moved != current_config.insert_occ_if_not_moved)
-  {
-    ui.insertOccIfNotMovedCheckBox->setChecked(received_config.insert_occ_if_not_moved);
-  }
-  if (received_config.insert_roi_if_not_moved != current_config.insert_roi_if_not_moved)
-  {
-    ui.insertRoiIfNotMovedCheckBox->setChecked(received_config.insert_roi_if_not_moved);
-  }
-  if (received_config.insert_occ_while_moving != current_config.insert_occ_while_moving)
-  {
-    ui.insertOccWhileMovingCheckBox->setChecked(received_config.insert_occ_while_moving);
-  }
-  if (received_config.insert_roi_while_moving != current_config.insert_roi_while_moving)
-  {
-    ui.insertRoiWhileMovingCheckBox->setChecked(received_config.insert_roi_while_moving);
-  }
-  if (received_config.wait_for_occ_scan != current_config.wait_for_occ_scan)
-  {
-    ui.waitForOccScanCheckBox->setChecked(received_config.wait_for_occ_scan);
-  }
-  if (received_config.wait_for_roi_scan != current_config.wait_for_roi_scan)
-  {
-    ui.waitForRoiScanCheckBox->setChecked(received_config.wait_for_roi_scan);
-  }
-  if (received_config.publish_planning_state != current_config.publish_planning_state)
-  {
-    ui.publishPlanningStateCheckBox->setChecked(received_config.publish_planning_state);
-  }
-  if (received_config.planner != current_config.planner)
-  {
-    ui.plannerComboBox->setCurrentText(QString::fromStdString(received_config.planner.substr(0, received_config.planner.size() - 14)));
-  }
-  if (received_config.planning_time != current_config.planning_time)
-  {
-    planningTimeSlider_setValue(received_config.planning_time);
-    ui.planningTimeSpinBox->setValue(received_config.planning_time);
-  }
-  if (received_config.use_cartesian_motion != current_config.use_cartesian_motion)
-  {
-    ui.useCartesianMotionCheckBox->setChecked(received_config.use_cartesian_motion);
-  }*/
-
+  /*ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
   ui.modeComboBox->setCurrentIndex(received_config.mode);
   ui.activateExecutionCheckBox->setChecked(received_config.activate_execution);
   ui.requireConfirmationCheckBox->setChecked(received_config.require_execution_confirmation);
@@ -694,7 +618,7 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
   ui.m2sMaxStepsSpinBox->setValue(received_config.m2s_max_steps);
   ui.moveToHomePushButton->setEnabled(received_config.mode < 2);
   ui.moveToTransportPushButton->setEnabled(received_config.mode < 2);
-  current_config = received_config;
+  current_config = received_config;*/
 }
 
 void RoiViewpointPlannerRqtPlugin::planRequest(bool enable)

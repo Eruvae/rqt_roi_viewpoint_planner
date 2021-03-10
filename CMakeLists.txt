@@ -18,6 +18,9 @@ set (CATKIN_DEPENDENCIES
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_DEPENDENCIES})
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAMLCPP yaml-cpp REQUIRED)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -153,6 +156,7 @@ include_directories(
   include
   ${CMAKE_CURRENT_BINARY_DIR} # contains ui generated header
   ${catkin_INCLUDE_DIRS}
+  ${YAMLCPP_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -171,6 +175,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${YAMLCPP_LIBRARIES}
 )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
