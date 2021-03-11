@@ -188,7 +188,11 @@ void RoiViewpointPlannerRqtPlugin::initIntParam(const std::string &name, int val
     QLabel *maxLabel = new QLabel(QString::number(max));
     QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
     slider->setMaximum(100);
+    intSlider_setValue(slider, name, val);
     QSpinBox *spinBox = new QSpinBox();
+    spinBox->setMinimum(min);
+    spinBox->setMaximum(max);
+    spinBox->setValue(val);
     layout->addWidget(minLabel);
     layout->addWidget(slider);
     layout->addWidget(maxLabel);
@@ -208,7 +212,13 @@ void RoiViewpointPlannerRqtPlugin::initDoubleParam(const std::string &name, doub
     QLabel *maxLabel = new QLabel(QString::number(max));
     QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
     slider->setMaximum(100);
+    doubleSlider_setValue(slider, name, val);
     QDoubleSpinBox *spinBox = new QDoubleSpinBox();
+    spinBox->setMinimum(min);
+    spinBox->setMaximum(max);
+    int exponent = QString::number(max-min, 'e', 0).split('e').last().toInt();
+    spinBox->setSingleStep(std::pow(10.0, exponent-1));
+    spinBox->setValue(val);
     layout->addWidget(minLabel);
     layout->addWidget(slider);
     layout->addWidget(maxLabel);
