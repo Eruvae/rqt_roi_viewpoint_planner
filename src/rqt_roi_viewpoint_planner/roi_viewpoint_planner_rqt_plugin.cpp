@@ -40,44 +40,6 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(this, SIGNAL(planRequestSignal(bool)), this, SLOT(planRequest(bool)));
   connect(this, SIGNAL(plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)), this, SLOT(plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)));
 
-  connect(ui.modeComboBox, SIGNAL(activated(int)), this, SLOT(on_modeComboBox_activated(int)));
-  connect(ui.activateExecutionCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_activateExecutionCheckBox_clicked(bool)));
-  connect(ui.requireConfirmationCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_requireConfirmationCheckBox_clicked(bool)));
-  connect(ui.minRangeSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_minRangeSlider_sliderMoved(int)));
-  connect(ui.minRangeSlider, SIGNAL(sliderReleased()), this, SLOT(on_minRangeSlider_sliderReleased()));
-  connect(ui.minRangeSpinBox, SIGNAL(editingFinished()), this, SLOT(on_minRangeSpinBox_editingFinished()));
-  connect(ui.maxRangeSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_maxRangeSlider_sliderMoved(int)));
-  connect(ui.maxRangeSlider, SIGNAL(sliderReleased()), this, SLOT(on_maxRangeSlider_sliderReleased()));
-  connect(ui.maxRangeSpinBox, SIGNAL(editingFinished()), this, SLOT(on_maxRangeSpinBox_editingFinished()));
-  connect(ui.insertOccIfNotMovedCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_insertOccIfNotMovedCheckBox_clicked(bool)));
-  connect(ui.insertRoiIfNotMovedCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_insertRoiIfNotMovedCheckBox_clicked(bool)));
-  connect(ui.insertOccWhileMovingCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_insertOccWhileMovingCheckBox_clicked(bool)));
-  connect(ui.insertRoiWhileMovingCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_insertRoiWhileMovingCheckBox_clicked(bool)));
-  connect(ui.waitForOccScanCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_waitForOccScanCheckBox_clicked(bool)));
-  connect(ui.waitForRoiScanCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_waitForRoiScanCheckBox_clicked(bool)));
-  connect(ui.publishPlanningStateCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_publishPlanningStateCheckBox_clicked(bool)));
-  connect(ui.plannerComboBox, SIGNAL(activated(QString)), this, SLOT(on_plannerComboBox_activated(QString)));
-  connect(ui.planningTimeSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_planningTimeSlider_sliderMoved(int)));
-  connect(ui.planningTimeSlider, SIGNAL(sliderReleased()), this, SLOT(on_planningTimeSlider_sliderReleased()));
-  connect(ui.planningTimeSpinBox, SIGNAL(editingFinished()), this, SLOT(on_planningTimeSpinBox_editingFinished()));
-  connect(ui.useCartesianMotionCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_useCartesianMotionCheckBox_clicked(bool)));
-  connect(ui.computeIkWhenSamplingCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_computeIkWhenSamplingCheckBox_clicked(bool)));
-  connect(ui.velocityScalingSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_velocityScalingSlider_sliderMoved(int)));
-  connect(ui.velocityScalingSlider, SIGNAL(sliderReleased()), this, SLOT(on_velocityScalingSlider_sliderReleased()));
-  connect(ui.velocityScalingSpinBox, SIGNAL(editingFinished()), this, SLOT(on_velocityScalingSpinBox_editingFinished()));
-  connect(ui.recordMapUpdatesCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordMapUpdatesCheckBox_clicked(bool)));
-  connect(ui.recordViewpointsCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_recordViewpointsCheckBox_clicked(bool)));
-  connect(ui.autoROISamplingComboBox, SIGNAL(activated(int)), this, SLOT(on_autoROISamplingComboBox_activated(int)));
-  connect(ui.autoExplSamplingComboBox, SIGNAL(activated(int)), this, SLOT(on_autoExplSamplingComboBox_activated(int)));
-  connect(ui.activateM2SCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_activateM2SCheckBox_clicked(bool)));
-  connect(ui.m2SExclusiveCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_m2SExclusiveCheckBox_clicked(bool)));
-  connect(ui.m2sDeltaThreshSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_m2sDeltaThreshSlider_sliderMoved(int)));
-  connect(ui.m2sDeltaThreshSlider, SIGNAL(sliderReleased()), this, SLOT(on_m2sDeltaThreshSlider_sliderReleased()));
-  connect(ui.m2sDeltaThreshSpinBox, SIGNAL(editingFinished()), this, SLOT(on_m2sDeltaThreshSpinBox_editingFinished()));
-
-  connect(ui.m2sMaxStepsSlider, SIGNAL(sliderMoved(int)), this, SLOT(on_m2sMaxStepsSlider_sliderMoved(int)));
-  connect(ui.m2sMaxStepsSlider, SIGNAL(sliderReleased()), this, SLOT(on_m2sMaxStepsSlider_sliderReleased()));
-  connect(ui.m2sMaxStepsSpinBox, SIGNAL(editingFinished()), this, SLOT(on_m2sMaxStepsSpinBox_editingFinished()));
   connect(ui.saveMapPushButton, SIGNAL(clicked()), this, SLOT(on_saveMapPushButton_clicked()));
   connect(ui.loadMapPushButton, SIGNAL(clicked()), this, SLOT(on_loadMapPushButton_clicked()));
   connect(ui.resetMapPushButton, SIGNAL(clicked()), this, SLOT(on_resetMapPushButton_clicked()));
@@ -155,7 +117,6 @@ void RoiViewpointPlannerRqtPlugin::initConfigGui()
 void RoiViewpointPlannerRqtPlugin::initEnumParam(const std::string &name, const std::string &enum_description_str, const std::string &type, const boost::any &val)
 {
     QComboBox *cb = new QComboBox();
-    ROS_INFO_STREAM("Enum description: " << enum_description_str);
     YAML::Node enum_description = YAML::Load(enum_description_str);
     for (const YAML::Node &node : enum_description["enum"])
     {
@@ -185,22 +146,28 @@ void RoiViewpointPlannerRqtPlugin::initEnumParam(const std::string &name, const 
     if (type == "bool")
     {
         default_val = QVariant(boost::any_cast<bool>(val));
+        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_boolComboBox_activated, this, cb, name, _1));
     }
     else if (type == "int")
     {
         default_val = QVariant(boost::any_cast<int>(val));
+        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intComboBox_activated, this, cb, name, _1));
     }
     else if (type == "double")
     {
         default_val = QVariant(boost::any_cast<double>(val));
+        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleComboBox_activated, this, cb, name, _1));
     }
     else if (type == "str")
     {
         default_val = QVariant(QString::fromStdString(boost::any_cast<std::string>(val)));
+        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_strComboBox_activated, this, cb, name, _1));
     }
     int default_index = cb->findData(default_val);
     if (default_index >= 0)
         cb->setCurrentIndex(default_index);
+
+    comboBox_map[name] = cb;
 
     ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), cb);
 }
@@ -209,6 +176,8 @@ void RoiViewpointPlannerRqtPlugin::initBoolParam(const std::string &name, bool v
 {
     QCheckBox *cb = new QCheckBox();
     cb->setChecked(val);
+    connect(cb, &QCheckBox::clicked, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_checkBox_clicked, this, name, _1));
+    checkBox_map[name] = cb;
     ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), cb);
 }
 
@@ -224,11 +193,11 @@ void RoiViewpointPlannerRqtPlugin::initIntParam(const std::string &name, int val
     layout->addWidget(slider);
     layout->addWidget(maxLabel);
     layout->addWidget(spinBox);
-
     connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved, this, spinBox, name, _1));
     connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased, this, spinBox, name));
     connect(spinBox, &QSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished, this, spinBox, slider, name));
-
+    slider_map[name] = slider;
+    spinBox_map[name] = spinBox;
     ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), layout);
 }
 
@@ -244,11 +213,11 @@ void RoiViewpointPlannerRqtPlugin::initDoubleParam(const std::string &name, doub
     layout->addWidget(slider);
     layout->addWidget(maxLabel);
     layout->addWidget(spinBox);
-
     connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved, this, spinBox, name, _1));
     connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased, this, spinBox, name));
     connect(spinBox, &QDoubleSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished, this, spinBox, slider, name));
-
+    slider_map[name] = slider;
+    spinBox_map[name] = spinBox;
     ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), layout);
 }
 
@@ -256,6 +225,8 @@ void RoiViewpointPlannerRqtPlugin::initStringParam(const std::string &name, cons
 {
     QLineEdit *le = new QLineEdit();
     le->setText(QString::fromStdString(val));
+    connect(le, &QLineEdit::textEdited, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited, this, name, _1));
+    lineEdit_map[name] = le;
     ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), le);
 }
 
@@ -288,39 +259,6 @@ void triggerConfiguration()
 {
   // Usually used to open a dialog to offer the user a set of configuration
 }*/
-
-void RoiViewpointPlannerRqtPlugin::on_modeComboBox_activated(int index)
-{
-  current_config.mode = index;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Mode change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Mode change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_activateExecutionCheckBox_clicked(bool checked)
-{
-  current_config.activate_execution = checked;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Activate execution failed");
-    return;
-  }
-  ui.statusTextBox->setText("Activate execution successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_requireConfirmationCheckBox_clicked(bool checked)
-{
-  current_config.require_execution_confirmation = checked;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Require plan change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Require plan change successful");
-}
 
 void RoiViewpointPlannerRqtPlugin::intSlider_setValue(QSlider *slider, const std::string &param, int value)
 {
@@ -406,219 +344,132 @@ void RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished(QDoubleSpinB
   doubleValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_insertOccIfNotMovedCheckBox_clicked(bool checked)
+void RoiViewpointPlannerRqtPlugin::on_boolComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
 {
-  current_config.insert_occ_if_not_moved = checked;
+  QVariant val = comboBox->itemData(index);
+  setValue<bool>(param, val.toBool());
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Insert occ if not moved change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Insert occ if not moved change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::on_insertRoiIfNotMovedCheckBox_clicked(bool checked)
+void RoiViewpointPlannerRqtPlugin::on_intComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
 {
-  current_config.insert_roi_if_not_moved = checked;
+  QVariant val = comboBox->itemData(index);
+  setValue<int>(param, val.toInt());
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Insert ROI if not moved change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Insert ROI if not moved change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::on_insertOccWhileMovingCheckBox_clicked(bool checked)
+void RoiViewpointPlannerRqtPlugin::on_doubleComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
 {
-  current_config.insert_occ_while_moving = checked;
+  QVariant val = comboBox->itemData(index);
+  setValue<double>(param, val.toDouble());
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Insert occ while moving change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Insert occ while moving change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::on_insertRoiWhileMovingCheckBox_clicked(bool checked)
+void RoiViewpointPlannerRqtPlugin::on_strComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
 {
-  current_config.insert_roi_while_moving = checked;
+  QVariant val = comboBox->itemData(index);
+  setValue<std::string>(param, val.toString().toStdString());
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Insert ROI while moving change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Insert ROI while moving change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::on_waitForOccScanCheckBox_clicked(bool checked)
+void RoiViewpointPlannerRqtPlugin::on_checkBox_clicked(const std::string &param, bool checked)
 {
-  current_config.wait_for_occ_scan = checked;
+  setValue<bool>(param, checked);
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Wait for occ scan change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Wait for occ scan change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
-void RoiViewpointPlannerRqtPlugin::on_waitForRoiScanCheckBox_clicked(bool checked)
+void RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited(const std::string &param, const QString &text)
 {
-  current_config.wait_for_roi_scan = checked;
+  setValue<std::string>(param, text.toStdString());
   if (!configClient->setConfiguration(current_config))
   {
-    ui.statusTextBox->setText("Wait for ROI scan change failed");
+    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
     return;
   }
-  ui.statusTextBox->setText("Wait for ROI scan change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_publishPlanningStateCheckBox_clicked(bool checked)
-{
-  current_config.publish_planning_state = checked;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Publish planning state change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Publish planning state change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_plannerComboBox_activated(QString planner_id)
-{
-  current_config.planner = (planner_id + "kConfigDefault").toStdString();
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Planner change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Planner change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_useCartesianMotionCheckBox_clicked(bool checked)
-{
-  current_config.use_cartesian_motion = checked;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Use cartesian motion change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Use cartesian motion change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_computeIkWhenSamplingCheckBox_clicked(bool checked)
-{
-  current_config.compute_ik_when_sampling = checked;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Compute IK when sampling change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Compute IK when sampling change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_recordMapUpdatesCheckBox_clicked(bool checked)
-{
-  current_config.record_map_updates = checked;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Record map updates change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Record map updates change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_recordViewpointsCheckBox_clicked(bool checked)
-{
-  current_config.record_viewpoints = checked;
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText("Record viewpoints change failed");
-    return;
-  }
-  ui.statusTextBox->setText("Record viewpoints change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_autoROISamplingComboBox_activated(int index)
-{
-    current_config.auto_roi_sampling = index + 3;
-    if (!configClient->setConfiguration(current_config))
-    {
-      ui.statusTextBox->setText("Mode change failed");
-      return;
-    }
-    ui.statusTextBox->setText("Mode change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_autoExplSamplingComboBox_activated(int index)
-{
-    current_config.auto_expl_sampling = index + 6;
-    if (!configClient->setConfiguration(current_config))
-    {
-      ui.statusTextBox->setText("Mode change failed");
-      return;
-    }
-    ui.statusTextBox->setText("Mode change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_activateM2SCheckBox_clicked(bool checked)
-{
-    current_config.activate_move_to_see = checked;
-    if (!configClient->setConfiguration(current_config))
-    {
-      ui.statusTextBox->setText("Activate M2S change failed");
-      return;
-    }
-    ui.statusTextBox->setText("Activate M2S change successful");
-}
-
-void RoiViewpointPlannerRqtPlugin::on_m2SExclusiveCheckBox_clicked(bool checked)
-{
-    current_config.move_to_see_exclusive = checked;
-    if (!configClient->setConfiguration(current_config))
-    {
-      ui.statusTextBox->setText("M2S Exclusive change failed");
-      return;
-    }
-    ui.statusTextBox->setText("M2S Exclusive change successful");
+  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
 }
 
 void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
 {
-  /*ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
-  ui.modeComboBox->setCurrentIndex(received_config.mode);
-  ui.activateExecutionCheckBox->setChecked(received_config.activate_execution);
-  ui.requireConfirmationCheckBox->setChecked(received_config.require_execution_confirmation);
-  minRangeSlider_setValue(received_config.sensor_min_range);
-  ui.minRangeSpinBox->setValue(received_config.sensor_min_range);
-  maxRangeSlider_setValue(received_config.sensor_max_range);
-  ui.maxRangeSpinBox->setValue(received_config.sensor_max_range);
-  ui.insertOccIfNotMovedCheckBox->setChecked(received_config.insert_occ_if_not_moved);
-  ui.insertRoiIfNotMovedCheckBox->setChecked(received_config.insert_roi_if_not_moved);
-  ui.insertOccWhileMovingCheckBox->setChecked(received_config.insert_occ_while_moving);
-  ui.insertRoiWhileMovingCheckBox->setChecked(received_config.insert_roi_while_moving);
-  ui.waitForOccScanCheckBox->setChecked(received_config.wait_for_occ_scan);
-  ui.waitForRoiScanCheckBox->setChecked(received_config.wait_for_roi_scan);
-  ui.publishPlanningStateCheckBox->setChecked(received_config.publish_planning_state);
-  ui.plannerComboBox->setCurrentText(QString::fromStdString(received_config.planner.substr(0, received_config.planner.size() - 14)));
-  planningTimeSlider_setValue(received_config.planning_time);
-  ui.planningTimeSpinBox->setValue(received_config.planning_time);
-  ui.useCartesianMotionCheckBox->setChecked(received_config.use_cartesian_motion);
-  ui.computeIkWhenSamplingCheckBox->setChecked(received_config.compute_ik_when_sampling);
-  velocityScalingSlider_setValue(received_config.velocity_scaling);
-  ui.velocityScalingSpinBox->setValue(received_config.velocity_scaling);
-  ui.recordMapUpdatesCheckBox->setChecked(received_config.record_map_updates);
-  ui.recordViewpointsCheckBox->setChecked(received_config.record_viewpoints);
-  ui.autoROISamplingComboBox->setCurrentIndex(received_config.auto_roi_sampling - 3);
-  ui.autoExplSamplingComboBox->setCurrentIndex(received_config.auto_expl_sampling - 6);
-  ui.activateM2SCheckBox->setChecked(received_config.activate_move_to_see);
-  ui.m2SExclusiveCheckBox->setChecked(received_config.move_to_see_exclusive);
-  m2sDeltaThreshSlider_setValue(received_config.m2s_delta_thresh);
-  ui.m2sDeltaThreshSpinBox->setValue(received_config.m2s_delta_thresh);
-  m2sMaxStepsSlider_setValue(received_config.m2s_max_steps);
-  ui.m2sMaxStepsSpinBox->setValue(received_config.m2s_max_steps);
-  ui.moveToHomePushButton->setEnabled(received_config.mode < 2);
-  ui.moveToTransportPushButton->setEnabled(received_config.mode < 2);
-  current_config = received_config;*/
+  // ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  current_config = received_config;
+  for (const auto &pair : parameter_map)
+  {
+    const std::string &name = pair.first;
+    const roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr &param = pair.second;
+    if (param->edit_method != "") // param is enum
+    {
+        QComboBox *cb = comboBox_map[name];
+        QVariant val;
+        if (param->type == "bool")
+            val = QVariant(getValue<bool>(name));
+        else if (param->type == "int")
+            val = QVariant(getValue<int>(name));
+        else if (param->type == "double")
+            val = QVariant(getValue<double>(name));
+        else if (param->type == "str")
+            val = QVariant(QString::fromStdString(getValue<std::string>(name)));
+
+        int index = cb->findData(val);
+        if (index >= 0)
+            cb->setCurrentIndex(index);
+    }
+    else if (param->type == "bool")
+    {
+        QCheckBox *cb = checkBox_map[name];
+        cb->setChecked(getValue<bool>(name));
+    }
+    else if (param->type == "int")
+    {
+        QSlider *slider = slider_map[name];
+        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(spinBox_map[name]);
+        intSlider_setValue(slider, name, getValue<int>(name));
+        spinBox->setValue(getValue<int>(name));
+    }
+    else if (param->type == "double")
+    {
+        QSlider *slider = slider_map[name];
+        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(spinBox_map[name]);
+        doubleSlider_setValue(slider, name, getValue<double>(name));
+        spinBox->setValue(getValue<double>(name));
+    }
+    else if (param->type == "str")
+    {
+        QLineEdit *le = lineEdit_map[name];
+        le->setText(QString::fromStdString(getValue<std::string>(name)));
+    }
+    else
+    {
+        ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
+    }
+  }
+  ui.moveToHomePushButton->setEnabled(current_config.mode < 2);
+  ui.moveToTransportPushButton->setEnabled(current_config.mode < 2);
 }
 
 void RoiViewpointPlannerRqtPlugin::planRequest(bool enable)
