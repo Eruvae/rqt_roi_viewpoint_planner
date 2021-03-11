@@ -288,12 +288,7 @@ void RoiViewpointPlannerRqtPlugin::intSpinBox_setPosition(QSpinBox *spinBox, con
 void RoiViewpointPlannerRqtPlugin::intValue_sendConfig(QSpinBox *spinBox, const std::string &param)
 {
   setValue<int>(param, spinBox->value());
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+  sendConfig(param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved(QSpinBox *spinBox, const std::string &param, int position)
@@ -330,12 +325,7 @@ void RoiViewpointPlannerRqtPlugin::doubleSpinBox_setPosition(QDoubleSpinBox *spi
 void RoiViewpointPlannerRqtPlugin::doubleValue_sendConfig(QDoubleSpinBox *spinBox, const std::string &param)
 {
   setValue<double>(param, spinBox->value());
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+  sendConfig(param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const std::string &param, int position)
@@ -358,70 +348,48 @@ void RoiViewpointPlannerRqtPlugin::on_boolComboBox_activated(QComboBox *comboBox
 {
   QVariant val = comboBox->itemData(index);
   setValue<bool>(param, val.toBool());
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+  sendConfig(param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_intComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
 {
   QVariant val = comboBox->itemData(index);
   setValue<int>(param, val.toInt());
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+  sendConfig(param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_doubleComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
 {
   QVariant val = comboBox->itemData(index);
   setValue<double>(param, val.toDouble());
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+  sendConfig(param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_strComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
 {
   QVariant val = comboBox->itemData(index);
   setValue<std::string>(param, val.toString().toStdString());
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+  sendConfig(param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_checkBox_clicked(const std::string &param, bool checked)
 {
   setValue<bool>(param, checked);
-  if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+  sendConfig(param);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited(const std::string &param, const QString &text)
 {
   setValue<std::string>(param, text.toStdString());
+  sendConfig(param);
+}
+
+void RoiViewpointPlannerRqtPlugin::sendConfig(const std::string &changed_param)
+{
   if (!configClient->setConfiguration(current_config))
-  {
-    ui.statusTextBox->setText(QString::fromStdString(param) + " change failed");
-    return;
-  }
-  ui.statusTextBox->setText(QString::fromStdString(param) + " change successful");
+    ui.statusTextBox->setText(QString::fromStdString(changed_param) + " change failed");
+  else
+    ui.statusTextBox->setText(QString::fromStdString(changed_param) + " change successful");
 }
 
 void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)

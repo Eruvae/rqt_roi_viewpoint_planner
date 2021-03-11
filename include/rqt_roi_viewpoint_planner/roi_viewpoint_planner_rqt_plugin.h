@@ -109,6 +109,8 @@ private:
   void doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const std::string &param, int position);
   void doubleValue_sendConfig(QDoubleSpinBox *spinBox, const std::string &param);
 
+  void sendConfig(const std::string &changed_param);
+
   template <typename T>
   T getValue(const std::string &param)
   {
