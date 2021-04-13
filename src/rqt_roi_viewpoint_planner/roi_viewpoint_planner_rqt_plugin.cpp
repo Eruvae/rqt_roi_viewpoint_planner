@@ -45,11 +45,13 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.resetMapPushButton, SIGNAL(clicked()), this, SLOT(on_resetMapPushButton_clicked()));
   connect(ui.moveToHomePushButton, SIGNAL(clicked()), this, SLOT(on_moveToHomePushButton_clicked()));
   connect(ui.moveToTransportPushButton, SIGNAL(clicked()), this, SLOT(on_moveToTransportPushButton_clicked()));
+  connect(ui.startEvaluatorPushButton, SIGNAL(clicked()), this, SLOT(on_startEvaluatorPushButton_clicked()));
 
   saveOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveOctomap>("/roi_viewpoint_planner/save_octomap");
   loadOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::LoadOctomap>("/roi_viewpoint_planner/load_octomap");
   resetOctomapClient = getNodeHandle().serviceClient<std_srvs::Empty>("/roi_viewpoint_planner/reset_octomap");
   moveToStateClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::MoveToState>("/roi_viewpoint_planner/move_to_state");
+  startEvaluatorClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::StartEvaluator>("/roi_viewpoint_planner/start_evaluator");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
 
@@ -467,8 +469,7 @@ void RoiViewpointPlannerRqtPlugin::plannerStateChanged(const roi_viewpoint_plann
   ROS_INFO_STREAM("Planner state slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
   ui.planningLed->setState(false);
   ui.movingLed->setState(state->robot_is_moving);
-  ui.occScanLed->setState(state->occupancy_scanned);
-  ui.roiScanLed->setState(state->roi_scanned);
+  ui.scanLed->setState(state->scan_inserted);
 }
 
 void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc)
@@ -600,6 +601,24 @@ void RoiViewpointPlannerRqtPlugin::on_moveToTransportPushButton_clicked()
   else
   {
     ui.statusTextBox->setText("Failed to call move to state service");
+  }
+}
+
+void RoiViewpointPlannerRqtPlugin::on_startEvaluatorPushButton_clicked()
+{
+  roi_viewpoint_planner_msgs::StartEvaluator srv;
+  srv.request.numEvals = ui.evalTrialsSpinBox->value();
+  srv.request.episodeDuration = ui.evalDurationSpinBox->value();
+  if (startEvaluatorClient.call(srv))
+  {
+    if (srv.response.success)
+      ui.statusTextBox->setText("Evaluator started");
+    else
+      ui.statusTextBox->setText("Couldn't start evaluator");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call start evaluator service");
   }
 }
 

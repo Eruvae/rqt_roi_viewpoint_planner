@@ -12,10 +12,12 @@
 #include <rqt_gui_cpp/plugin.h>
 #include <dynamic_reconfigure/client.h>
 #include <roi_viewpoint_planner_msgs/PlannerConfig.h>
+#include <roi_viewpoint_planner_msgs/EvaluatorConfig.h>
 #include <roi_viewpoint_planner_msgs/PlannerState.h>
 #include <roi_viewpoint_planner_msgs/SaveOctomap.h>
 #include <roi_viewpoint_planner_msgs/LoadOctomap.h>
 #include <roi_viewpoint_planner_msgs/MoveToState.h>
+#include <roi_viewpoint_planner_msgs/StartEvaluator.h>
 #include <std_srvs/Trigger.h>
 #include <std_srvs/Empty.h>
 #include <unordered_map>
@@ -61,6 +63,8 @@ private slots:
   void planRequest(bool enable);
   void plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
+  void on_startEvaluatorPushButton_clicked();
+
 signals:
   // Internal signals
   void configChangedSignal(const roi_viewpoint_planner::PlannerConfig &received_config);
@@ -75,6 +79,7 @@ private:
   ros::ServiceClient loadOctomapClient;
   ros::ServiceClient resetOctomapClient;
   ros::ServiceClient moveToStateClient;
+  ros::ServiceClient startEvaluatorClient;
 
   ros::Subscriber plannerStateSub;
 
