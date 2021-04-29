@@ -13,61 +13,109 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0" rowspan="8">
+    <layout class="QFormLayout" name="configLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+    </layout>
+   </item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="plannerStateGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Planner State</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_3">
+      <item row="0" column="0">
+       <widget class="QLabel" name="planningLabel">
+        <property name="text">
+         <string>Planning</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="LedIndicator" name="planningLed" native="true"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="movingLabel">
+        <property name="text">
+         <string>Moving</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="LedIndicator" name="movingLed" native="true"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="scanLabel">
+        <property name="text">
+         <string>Scan inserted</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="LedIndicator" name="scanLed" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QGroupBox" name="planRequestGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Plan request</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="1">
+       <widget class="LedIndicator" name="planRequestLed" native="true"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="planAcceptPushButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Accept</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="planDeclinePushButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Decline</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="planRequestLabel">
+        <property name="text">
+         <string>Received</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="3" column="1">
     <widget class="QPushButton" name="moveToTransportPushButton">
      <property name="text">
       <string>Move to transport</string>
      </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QGroupBox" name="plannerStateGroupBox">
-     <property name="title">
-      <string>Planner State</string>
-     </property>
-     <widget class="QWidget" name="formLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>30</y>
-        <width>121</width>
-        <height>71</height>
-       </rect>
-      </property>
-      <layout class="QFormLayout" name="plannerStateLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="planningLabel">
-         <property name="text">
-          <string>Planning</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="LedIndicator" name="planningLed" native="true"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="movingLabel">
-         <property name="text">
-          <string>Moving</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="LedIndicator" name="movingLed" native="true"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="scanLabel">
-         <property name="text">
-          <string>Scan inserted</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="LedIndicator" name="scanLed" native="true"/>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
    <item row="4" column="1">
@@ -77,16 +125,10 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0" colspan="2">
-    <widget class="QLineEdit" name="statusTextBox"/>
-   </item>
-   <item row="0" column="0" rowspan="8">
-    <layout class="QFormLayout" name="configLayout"/>
-   </item>
-   <item row="7" column="1">
-    <widget class="QPushButton" name="saveMapPushButton">
+   <item row="5" column="1">
+    <widget class="QPushButton" name="resetMapPushButton">
      <property name="text">
-      <string>Save map</string>
+      <string>Reset map</string>
      </property>
     </widget>
    </item>
@@ -97,105 +139,108 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="planRequestLabel">
-       <property name="text">
-        <string>Plan request</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="LedIndicator" name="planRequestLed" native="true"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QPushButton" name="planAcceptPushButton">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Accept</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPushButton" name="planDeclinePushButton">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Decline</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="5" column="1">
-    <widget class="QPushButton" name="resetMapPushButton">
+   <item row="7" column="1">
+    <widget class="QPushButton" name="saveMapPushButton">
      <property name="text">
-      <string>Reset map</string>
+      <string>Save map</string>
      </property>
     </widget>
    </item>
+   <item row="8" column="0" colspan="2">
+    <widget class="QLineEdit" name="statusTextBox"/>
+   </item>
    <item row="1" column="1">
     <widget class="QGroupBox" name="evaluatorGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="title">
       <string>Evaluator</string>
      </property>
-     <widget class="QWidget" name="formLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>20</y>
-        <width>311</width>
-        <height>141</height>
-       </rect>
-      </property>
-      <layout class="QFormLayout" name="evaluatorLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="evalTrialsLabel">
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="evalTrialsLabel">
+        <property name="text">
+         <string>Trials</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="evalTrialsSpinBox">
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="evalEndParamLabel">
+        <property name="text">
+         <string>End param</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="evalEndParamComboBox">
+        <item>
          <property name="text">
-          <string>Trials</string>
+          <string>Time</string>
          </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QSpinBox" name="evalTrialsSpinBox">
-         <property name="maximum">
-          <number>50</number>
-         </property>
-         <property name="value">
-          <number>10</number>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="evalDurationLabel">
+        </item>
+        <item>
          <property name="text">
-          <string>Duration</string>
+          <string>Plan duration</string>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="evalDurationSpinBox">
-         <property name="maximum">
-          <double>600.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>180.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QPushButton" name="startEvaluatorPushButton">
+        </item>
+        <item>
          <property name="text">
-          <string>Start evaluator</string>
+          <string>Plan length</string>
          </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="evalDurationLabel">
+        <property name="text">
+         <string>Duration</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="evalDurationSpinBox">
+        <property name="maximum">
+         <double>600.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>180.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="startEvaluatorPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Start evaluator</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

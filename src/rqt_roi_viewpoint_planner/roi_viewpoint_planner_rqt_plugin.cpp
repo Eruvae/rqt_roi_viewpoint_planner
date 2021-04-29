@@ -607,8 +607,9 @@ void RoiViewpointPlannerRqtPlugin::on_moveToTransportPushButton_clicked()
 void RoiViewpointPlannerRqtPlugin::on_startEvaluatorPushButton_clicked()
 {
   roi_viewpoint_planner_msgs::StartEvaluator srv;
-  srv.request.numEvals = ui.evalTrialsSpinBox->value();
-  srv.request.episodeDuration = ui.evalDurationSpinBox->value();
+  srv.request.num_evals = ui.evalTrialsSpinBox->value();
+  srv.request.episode_end_param = static_cast<uint8_t>(ui.evalEndParamComboBox->currentIndex());
+  srv.request.episode_duration = ui.evalDurationSpinBox->value();
   if (startEvaluatorClient.call(srv))
   {
     if (srv.response.success)
