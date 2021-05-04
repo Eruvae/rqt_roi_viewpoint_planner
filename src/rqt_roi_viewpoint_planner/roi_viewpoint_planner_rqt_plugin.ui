@@ -193,6 +193,9 @@
       </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="evalEndParamComboBox">
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
         <item>
          <property name="text">
           <string>Time</string>
@@ -223,7 +226,7 @@
          <double>600.000000000000000</double>
         </property>
         <property name="value">
-         <double>180.000000000000000</double>
+         <double>120.000000000000000</double>
         </property>
        </widget>
       </item>
