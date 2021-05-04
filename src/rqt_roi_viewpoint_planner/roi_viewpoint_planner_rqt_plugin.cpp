@@ -610,6 +610,7 @@ void RoiViewpointPlannerRqtPlugin::on_startEvaluatorPushButton_clicked()
   srv.request.num_evals = ui.evalTrialsSpinBox->value();
   srv.request.episode_end_param = static_cast<uint8_t>(ui.evalEndParamComboBox->currentIndex());
   srv.request.episode_duration = ui.evalDurationSpinBox->value();
+  srv.request.starting_index = ui.startingIndexSpinBox->value();
   if (startEvaluatorClient.call(srv))
   {
     if (srv.response.success)
