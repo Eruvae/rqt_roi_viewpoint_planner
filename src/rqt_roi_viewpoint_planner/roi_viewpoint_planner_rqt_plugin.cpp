@@ -45,12 +45,14 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.resetMapPushButton, SIGNAL(clicked()), this, SLOT(on_resetMapPushButton_clicked()));
   connect(ui.moveToHomePushButton, SIGNAL(clicked()), this, SLOT(on_moveToHomePushButton_clicked()));
   connect(ui.moveToTransportPushButton, SIGNAL(clicked()), this, SLOT(on_moveToTransportPushButton_clicked()));
+  connect(ui.randomizePlantsPushButton, SIGNAL(clicked()), this, SLOT(on_randomizePlantsPushButton_clicked()));
   connect(ui.startEvaluatorPushButton, SIGNAL(clicked()), this, SLOT(on_startEvaluatorPushButton_clicked()));
 
   saveOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveOctomap>("/roi_viewpoint_planner/save_octomap");
   loadOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::LoadOctomap>("/roi_viewpoint_planner/load_octomap");
   resetOctomapClient = getNodeHandle().serviceClient<std_srvs::Empty>("/roi_viewpoint_planner/reset_octomap");
   moveToStateClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::MoveToState>("/roi_viewpoint_planner/move_to_state");
+  randomizePlantPositionsClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::RandomizePlantPositions>("/roi_viewpoint_planner/randomize_plant_positions");
   startEvaluatorClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::StartEvaluator>("/roi_viewpoint_planner/start_evaluator");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
@@ -601,6 +603,29 @@ void RoiViewpointPlannerRqtPlugin::on_moveToTransportPushButton_clicked()
   else
   {
     ui.statusTextBox->setText("Failed to call move to state service");
+  }
+}
+
+void RoiViewpointPlannerRqtPlugin::on_randomizePlantsPushButton_clicked()
+{
+  roi_viewpoint_planner_msgs::RandomizePlantPositions srv;
+  srv.request.min_point.x = ui.randMinXSpinBox->value();
+  srv.request.min_point.y = ui.randMinYSpinBox->value();
+  srv.request.min_point.z = ui.randMinZSpinBox->value();
+  srv.request.max_point.x = ui.randMaxXSpinBox->value();
+  srv.request.max_point.y = ui.randMaxYSpinBox->value();
+  srv.request.max_point.z = ui.randMaxZSpinBox->value();
+  srv.request.min_dist = ui.randMinDistSpinBox->value();
+  if (randomizePlantPositionsClient.call(srv))
+  {
+    if (srv.response.success)
+      ui.statusTextBox->setText("Plant positions randomized");
+    else
+      ui.statusTextBox->setText("Couldn't randomize plant positions");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call start randomize plant positions service");
   }
 }
 

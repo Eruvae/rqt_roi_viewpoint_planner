@@ -6,67 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>238</width>
-    <height>611</height>
+    <width>298</width>
+    <height>786</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_3">
-   <item row="0" column="0" rowspan="8">
-    <layout class="QFormLayout" name="configLayout">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
-    </layout>
+  <layout class="QGridLayout" name="mainGridLayout">
+   <item row="9" column="0" colspan="2">
+    <widget class="QLineEdit" name="statusTextBox"/>
    </item>
-   <item row="0" column="1">
-    <widget class="QGroupBox" name="plannerStateGroupBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item row="5" column="1">
+    <widget class="QPushButton" name="moveToHomePushButton">
+     <property name="text">
+      <string>Move to home</string>
      </property>
-     <property name="title">
-      <string>Planner State</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="0" column="0">
-       <widget class="QLabel" name="planningLabel">
-        <property name="text">
-         <string>Planning</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="LedIndicator" name="planningLed" native="true"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="movingLabel">
-        <property name="text">
-         <string>Moving</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="LedIndicator" name="movingLed" native="true"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="scanLabel">
-        <property name="text">
-         <string>Scan inserted</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="LedIndicator" name="scanLed" native="true"/>
-      </item>
-     </layout>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <widget class="QGroupBox" name="planRequestGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -77,7 +35,7 @@
      <property name="title">
       <string>Plan request</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="planRequestGroupBoxLayout">
       <item row="0" column="1">
        <widget class="LedIndicator" name="planRequestLed" native="true"/>
       </item>
@@ -111,44 +69,6 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QPushButton" name="moveToTransportPushButton">
-     <property name="text">
-      <string>Move to transport</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QPushButton" name="moveToHomePushButton">
-     <property name="text">
-      <string>Move to home</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QPushButton" name="resetMapPushButton">
-     <property name="text">
-      <string>Reset map</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QPushButton" name="loadMapPushButton">
-     <property name="text">
-      <string>Load map</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QPushButton" name="saveMapPushButton">
-     <property name="text">
-      <string>Save map</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0" colspan="2">
-    <widget class="QLineEdit" name="statusTextBox"/>
-   </item>
    <item row="1" column="1">
     <widget class="QGroupBox" name="evaluatorGroupBox">
      <property name="sizePolicy">
@@ -166,7 +86,7 @@
      <property name="title">
       <string>Evaluator</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
+     <layout class="QFormLayout" name="evaluatorGroupBoxLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="evalTrialsLabel">
         <property name="text">
@@ -250,6 +170,258 @@
        <widget class="QLabel" name="startingIndexLabel">
         <property name="text">
          <string>S-Index</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QPushButton" name="resetMapPushButton">
+     <property name="text">
+      <string>Reset map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QPushButton" name="saveMapPushButton">
+     <property name="text">
+      <string>Save map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" rowspan="9">
+    <layout class="QFormLayout" name="configLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+    </layout>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="moveToTransportPushButton">
+     <property name="text">
+      <string>Move to transport</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QPushButton" name="loadMapPushButton">
+     <property name="text">
+      <string>Load map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="plannerStateGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Planner State</string>
+     </property>
+     <layout class="QFormLayout" name="plannerStateGroupBoxLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="planningLabel">
+        <property name="text">
+         <string>Planning</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="LedIndicator" name="planningLed" native="true"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="movingLabel">
+        <property name="text">
+         <string>Moving</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="LedIndicator" name="movingLed" native="true"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="scanLabel">
+        <property name="text">
+         <string>Scan inserted</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="LedIndicator" name="scanLed" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QGroupBox" name="randomizePlantsGroupBox">
+     <property name="title">
+      <string>Randomize plant positions</string>
+     </property>
+     <layout class="QFormLayout" name="randomizePlantGroupBoxLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="randMinLabel">
+        <property name="text">
+         <string>Min</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="randMaxLabel">
+        <property name="text">
+         <string>Max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="randMinDistLabel">
+        <property name="text">
+         <string>Min Dist</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="randMinLayout">
+        <item>
+         <widget class="QDoubleSpinBox" name="randMinXSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>-1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMinYSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>-1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMinZSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>-0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="randMaxLayout">
+        <item>
+         <widget class="QDoubleSpinBox" name="randMaxXSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMaxYSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMaxZSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="randMinDistSpinBox">
+        <property name="maximum">
+         <double>9.990000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.400000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="randomizePlantsPushButton">
+        <property name="text">
+         <string>Randomize</string>
         </property>
        </widget>
       </item>

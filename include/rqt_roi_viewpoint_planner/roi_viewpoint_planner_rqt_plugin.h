@@ -17,6 +17,7 @@
 #include <roi_viewpoint_planner_msgs/SaveOctomap.h>
 #include <roi_viewpoint_planner_msgs/LoadOctomap.h>
 #include <roi_viewpoint_planner_msgs/MoveToState.h>
+#include <roi_viewpoint_planner_msgs/RandomizePlantPositions.h>
 #include <roi_viewpoint_planner_msgs/StartEvaluator.h>
 #include <std_srvs/Trigger.h>
 #include <std_srvs/Empty.h>
@@ -63,6 +64,7 @@ private slots:
   void planRequest(bool enable);
   void plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
+  void on_randomizePlantsPushButton_clicked();
   void on_startEvaluatorPushButton_clicked();
 
 signals:
@@ -79,6 +81,7 @@ private:
   ros::ServiceClient loadOctomapClient;
   ros::ServiceClient resetOctomapClient;
   ros::ServiceClient moveToStateClient;
+  ros::ServiceClient randomizePlantPositionsClient;
   ros::ServiceClient startEvaluatorClient;
 
   ros::Subscriber plannerStateSub;
