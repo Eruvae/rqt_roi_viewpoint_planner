@@ -8,6 +8,7 @@
 #include <QDoubleSpinBox>
 #include <QSlider>
 #include <QLineEdit>
+#include <QThread>
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <dynamic_reconfigure/client.h>
@@ -26,6 +27,52 @@
 
 namespace rqt_roi_viewpoint_planner
 {
+
+class MoveToStateThread : public QThread {
+  Q_OBJECT
+public:
+  MoveToStateThread(ros::NodeHandle &nh) : QThread(),
+    moveToStateClient(nh.serviceClient<roi_viewpoint_planner_msgs::MoveToState>("/roi_viewpoint_planner/move_to_state")),
+    name("pose")
+  {
+  }
+
+  bool setGoalState(const std::array<double, 6> &state, const QString &name = "pose")
+  {
+    if (isRunning())
+      return false;
+
+    this->name = name;
+    srv.request.joint_values.resize(state.size());
+    std::copy(state.begin(), state.end(), srv.request.joint_values.begin());
+    return true;
+  }
+
+  void run() override
+  {
+    if (!moveToStateClient.call(srv))
+    {
+      emit error("Failed to call move to state service");
+      return;
+    }
+    if (!srv.response.success)
+    {
+      emit error("Couldn't plan to specified position");
+      return;
+    }
+    emit success("Moving to " + name + " successful");
+  }
+
+
+signals:
+  void success(QString msg);
+  void error(QString msg);
+
+private:
+  ros::ServiceClient moveToStateClient;
+  QString name;
+  roi_viewpoint_planner_msgs::MoveToState srv;
+};
 
 class RoiViewpointPlannerRqtPlugin : public rqt_gui_cpp::Plugin
 {
@@ -85,11 +132,11 @@ private:
 
   Ui::RoiViewpointPlannerRqtPlugin ui;
   QWidget* widget;
+  std::unique_ptr<MoveToStateThread> moveToStateThread;
   roi_viewpoint_planner::PlannerConfig current_config;
   ros::ServiceClient saveOctomapClient;
   ros::ServiceClient loadOctomapClient;
   ros::ServiceClient resetOctomapClient;
-  ros::ServiceClient moveToStateClient;
   ros::ServiceClient randomizePlantPositionsClient;
   ros::ServiceClient startEvaluatorClient;
 

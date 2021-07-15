@@ -5,7 +5,6 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QtGlobal>
-#include <QThread>
 #include <QFileDialog>
 #include <yaml-cpp/yaml.h>
 
@@ -47,10 +46,13 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.randomizePlantsPushButton, SIGNAL(clicked()), this, SLOT(on_randomizePlantsPushButton_clicked()));
   connect(ui.startEvaluatorPushButton, SIGNAL(clicked()), this, SLOT(on_startEvaluatorPushButton_clicked()));
 
+  moveToStateThread.reset(new MoveToStateThread(getNodeHandle()));
+  connect(moveToStateThread.get(), SIGNAL(success(QString)), ui.statusTextBox, SLOT(setText(QString)));
+  connect(moveToStateThread.get(), SIGNAL(error(QString)), ui.statusTextBox, SLOT(setText(QString)));
+
   saveOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveOctomap>("/roi_viewpoint_planner/save_octomap");
   loadOctomapClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::LoadOctomap>("/roi_viewpoint_planner/load_octomap");
   resetOctomapClient = getNodeHandle().serviceClient<std_srvs::Empty>("/roi_viewpoint_planner/reset_octomap");
-  moveToStateClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::MoveToState>("/roi_viewpoint_planner/move_to_state");
   randomizePlantPositionsClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::RandomizePlantPositions>("/roi_viewpoint_planner/randomize_plant_positions");
   startEvaluatorClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::StartEvaluator>("/roi_viewpoint_planner/start_evaluator");
 
@@ -573,27 +575,23 @@ void RoiViewpointPlannerRqtPlugin::on_resetMapPushButton_clicked()
 
 void RoiViewpointPlannerRqtPlugin::on_moveArmPushButton_clicked()
 {
-  roi_viewpoint_planner_msgs::MoveToState srv;
+  if (moveToStateThread->isRunning())
+  {
+    ui.statusTextBox->setText("Arm is already moving");
+    return;
+  }
   int index = ui.moveArmComboBox->currentIndex();
   if (index < 0 || index >= MOVE_CONFIGS.size())
   {
     ui.statusTextBox->setText("Invalid move config");
     return;
   }
-  srv.request.async = true;
-  srv.request.joint_values.resize(MOVE_CONFIGS[index].size());
-  std::copy(MOVE_CONFIGS[index].begin(), MOVE_CONFIGS[index].end(), srv.request.joint_values.begin());
-  if (moveToStateClient.call(srv))
+  if (!moveToStateThread->setGoalState(MOVE_CONFIGS[index], ui.moveArmComboBox->currentText()))
   {
-    if (srv.response.success)
-      ui.statusTextBox->setText("Moving to " + ui.moveArmComboBox->currentText() + " position");
-    else
-      ui.statusTextBox->setText("Couldn't plan to specified position");
+    ui.statusTextBox->setText("Couldn't set move config");
+    return;
   }
-  else
-  {
-    ui.statusTextBox->setText("Failed to call move to state service");
-  }
+  moveToStateThread->start();
 }
 
 void RoiViewpointPlannerRqtPlugin::on_randomizePlantsPushButton_clicked()
