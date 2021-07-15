@@ -43,8 +43,7 @@ private slots:
   void on_saveMapPushButton_clicked();
   void on_loadMapPushButton_clicked();
   void on_resetMapPushButton_clicked();
-  void on_moveToHomePushButton_clicked();
-  void on_moveToTransportPushButton_clicked();
+  void on_moveArmPushButton_clicked();
 
   void on_boolComboBox_activated(QComboBox *comboBox, const std::string &param, int index);
   void on_intComboBox_activated(QComboBox *comboBox, const std::string &param, int index);
@@ -74,6 +73,16 @@ signals:
   void plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
 private:
+
+  static constexpr std::array<std::array<double, 6>, 5> MOVE_CONFIGS =
+  {{
+    {0, -0.7854, 1.5708, -0.7854, 0, 0}, // HOME
+    {0, 0, 0, 0, -1.5707, 0}, // TRANSPORT
+    {0, -1.5707, 0, -1.5707, 0, -3.1415}, // UP
+    {0, -3.1415, 0, -1.5707, 0, -1.5707}, // LEFT
+    {0, 0, 0, 0, 0, 0} // ZERO
+  }};
+
   Ui::RoiViewpointPlannerRqtPlugin ui;
   QWidget* widget;
   roi_viewpoint_planner::PlannerConfig current_config;

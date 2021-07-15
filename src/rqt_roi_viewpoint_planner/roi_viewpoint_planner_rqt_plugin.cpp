@@ -43,8 +43,7 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.saveMapPushButton, SIGNAL(clicked()), this, SLOT(on_saveMapPushButton_clicked()));
   connect(ui.loadMapPushButton, SIGNAL(clicked()), this, SLOT(on_loadMapPushButton_clicked()));
   connect(ui.resetMapPushButton, SIGNAL(clicked()), this, SLOT(on_resetMapPushButton_clicked()));
-  connect(ui.moveToHomePushButton, SIGNAL(clicked()), this, SLOT(on_moveToHomePushButton_clicked()));
-  connect(ui.moveToTransportPushButton, SIGNAL(clicked()), this, SLOT(on_moveToTransportPushButton_clicked()));
+  connect(ui.moveArmPushButton, SIGNAL(clicked()), this, SLOT(on_moveArmPushButton_clicked()));
   connect(ui.randomizePlantsPushButton, SIGNAL(clicked()), this, SLOT(on_randomizePlantsPushButton_clicked()));
   connect(ui.startEvaluatorPushButton, SIGNAL(clicked()), this, SLOT(on_startEvaluatorPushButton_clicked()));
 
@@ -450,8 +449,8 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
         ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
     }
   }
-  ui.moveToHomePushButton->setEnabled(current_config.mode < 2);
-  ui.moveToTransportPushButton->setEnabled(current_config.mode < 2);
+  ui.moveArmComboBox->setEnabled(current_config.mode < 2);
+  ui.moveArmPushButton->setEnabled(current_config.mode < 2);
 }
 
 void RoiViewpointPlannerRqtPlugin::planRequest(bool enable)
@@ -572,31 +571,22 @@ void RoiViewpointPlannerRqtPlugin::on_resetMapPushButton_clicked()
   }
 }
 
-void RoiViewpointPlannerRqtPlugin::on_moveToHomePushButton_clicked()
+void RoiViewpointPlannerRqtPlugin::on_moveArmPushButton_clicked()
 {
   roi_viewpoint_planner_msgs::MoveToState srv;
-  srv.request.joint_values = {0, -0.7854, 1.5708, -0.7854, 0, 0};
+  int index = ui.moveArmComboBox->currentIndex();
+  if (index < 0 || index >= MOVE_CONFIGS.size())
+  {
+    ui.statusTextBox->setText("Invalid move config");
+    return;
+  }
+  srv.request.async = true;
+  srv.request.joint_values.resize(MOVE_CONFIGS[index].size());
+  std::copy(MOVE_CONFIGS[index].begin(), MOVE_CONFIGS[index].end(), srv.request.joint_values.begin());
   if (moveToStateClient.call(srv))
   {
     if (srv.response.success)
-      ui.statusTextBox->setText("Moving to home position");
-    else
-      ui.statusTextBox->setText("Couldn't plan to specified position");
-  }
-  else
-  {
-    ui.statusTextBox->setText("Failed to call move to state service");
-  }
-}
-
-void RoiViewpointPlannerRqtPlugin::on_moveToTransportPushButton_clicked()
-{
-  roi_viewpoint_planner_msgs::MoveToState srv;
-  srv.request.joint_values = {0, 0, 0, 0, -1.5707, 0};
-  if (moveToStateClient.call(srv))
-  {
-    if (srv.response.success)
-      ui.statusTextBox->setText("Moving to transport position");
+      ui.statusTextBox->setText("Moving to " + ui.moveArmComboBox->currentText() + " position");
     else
       ui.statusTextBox->setText("Couldn't plan to specified position");
   }
