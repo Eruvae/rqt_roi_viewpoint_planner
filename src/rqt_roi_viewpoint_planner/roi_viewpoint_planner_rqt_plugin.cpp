@@ -637,6 +637,8 @@ void RoiViewpointPlannerRqtPlugin::on_startEvaluatorPushButton_clicked()
   }
 }
 
+constexpr std::array<std::array<double, 6>, 5> RoiViewpointPlannerRqtPlugin::MOVE_CONFIGS;
+
 } // namespace roi_viewpoint_planner_rqt_plugin
 
 PLUGINLIB_EXPORT_CLASS(rqt_roi_viewpoint_planner::RoiViewpointPlannerRqtPlugin, rqt_gui_cpp::Plugin)
