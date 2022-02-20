@@ -536,7 +536,7 @@ void RoiViewpointPlannerRqtPlugin::on_saveMapPushButton_clicked()
 
 void RoiViewpointPlannerRqtPlugin::on_loadMapPushButton_clicked()
 {
-  QString file_path = QFileDialog::getOpenFileName(widget, QString(), QString(), "Octree (*.ot)");
+  QString file_path = QFileDialog::getOpenFileName(widget, QString(), QString(), "Octree (*.ot *.bt)");
   if (file_path.isEmpty())
     return;
 
