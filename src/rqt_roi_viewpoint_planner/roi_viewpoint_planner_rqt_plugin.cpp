@@ -624,6 +624,14 @@ void RoiViewpointPlannerRqtPlugin::on_startEvaluatorPushButton_clicked()
   srv.request.episode_end_param = static_cast<uint8_t>(ui.evalEndParamComboBox->currentIndex());
   srv.request.episode_duration = ui.evalDurationSpinBox->value();
   srv.request.starting_index = ui.startingIndexSpinBox->value();
+  srv.request.randomize_plants = ui.evalRandomizeCheckBox->isChecked();
+  srv.request.min_point.x = ui.randMinXSpinBox->value();
+  srv.request.min_point.y = ui.randMinYSpinBox->value();
+  srv.request.min_point.z = ui.randMinZSpinBox->value();
+  srv.request.max_point.x = ui.randMaxXSpinBox->value();
+  srv.request.max_point.y = ui.randMaxYSpinBox->value();
+  srv.request.max_point.z = ui.randMaxZSpinBox->value();
+  srv.request.min_dist = ui.randMinDistSpinBox->value();
   if (startEvaluatorClient.call(srv))
   {
     if (srv.response.success)
