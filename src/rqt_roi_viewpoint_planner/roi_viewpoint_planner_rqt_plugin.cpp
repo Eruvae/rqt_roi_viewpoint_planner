@@ -6,9 +6,9 @@
 #include <QTimer>
 #include <QtGlobal>
 #include <QFileDialog>
-#include <yaml-cpp/yaml.h>
 
 Q_DECLARE_METATYPE(roi_viewpoint_planner::PlannerConfig)
+Q_DECLARE_METATYPE(view_motion_planner::VmpConfig)
 Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
 
 namespace rqt_roi_viewpoint_planner
@@ -16,7 +16,7 @@ namespace rqt_roi_viewpoint_planner
 
 RoiViewpointPlannerRqtPlugin::RoiViewpointPlannerRqtPlugin() :
   rqt_gui_cpp::Plugin(),
-  widget(0)
+  widget(nullptr)
 {
   setObjectName("RoiViewpointPlannerRqtPlugin");
 }
@@ -33,9 +33,10 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   context.addWidget(widget);
 
   qRegisterMetaType<roi_viewpoint_planner::PlannerConfig>();
+  qRegisterMetaType<view_motion_planner::VmpConfig>();
   qRegisterMetaType<roi_viewpoint_planner_msgs::PlannerStateConstPtr>();
 
-  connect(this, SIGNAL(configChangedSignal(const roi_viewpoint_planner::PlannerConfig&)), this, SLOT(configChanged(const roi_viewpoint_planner::PlannerConfig&)));
+  connect(this, SIGNAL(rvpConfigChangedSignal(const roi_viewpoint_planner::PlannerConfig&)), this, SLOT(rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig&)));
   connect(this, SIGNAL(planRequestSignal(bool)), this, SLOT(planRequest(bool)));
   connect(this, SIGNAL(plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)), this, SLOT(plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)));
 
@@ -60,8 +61,11 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   confirmPlanExecutionServer = getNodeHandle().advertiseService("/roi_viewpoint_planner/request_execution_confirmation", &RoiViewpointPlannerRqtPlugin::confirmPlanExecutionCallback, this);
 
-  configClient = new dynamic_reconfigure::Client<roi_viewpoint_planner::PlannerConfig>("/roi_viewpoint_planner",
-                 boost::bind(&RoiViewpointPlannerRqtPlugin::configCallback, this, _1));
+  rvpConfigClient = new dynamic_reconfigure::Client<roi_viewpoint_planner::PlannerConfig>("/roi_viewpoint_planner",
+                 boost::bind(&RoiViewpointPlannerRqtPlugin::rvpConfigCallback, this, _1));
+
+  vmpConfigClient = new dynamic_reconfigure::Client<view_motion_planner::VmpConfig>("/view_motion_planner",
+                 boost::bind(&RoiViewpointPlannerRqtPlugin::vmpConfigCallback, this, _1));
 
   //ROS_INFO_STREAM("Init is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
 
@@ -70,45 +74,40 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
 void RoiViewpointPlannerRqtPlugin::initConfigGui()
 {
-    const std::vector<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr> &params = roi_viewpoint_planner::PlannerConfig::__getParamDescriptions__();
-    //const std::vector<roi_viewpoint_planner::PlannerConfig::AbstractGroupDescriptionConstPtr> &groups = roi_viewpoint_planner::PlannerConfig::__getGroupDescriptions__();
-    const roi_viewpoint_planner::PlannerConfig &config_def = roi_viewpoint_planner::PlannerConfig::__getDefault__();
-    const roi_viewpoint_planner::PlannerConfig &config_min = roi_viewpoint_planner::PlannerConfig::__getMin__();
-    const roi_viewpoint_planner::PlannerConfig &config_max = roi_viewpoint_planner::PlannerConfig::__getMax__();
-    for (const roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr &param : params)
+    for (const roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr &param : roi_viewpoint_planner::PlannerConfig::__getParamDescriptions__())
     {
-        parameter_map[param->name] = param;
-        boost::any val, min, max;
-        param->getValue(config_def, val);
-        param->getValue(config_max, max);
-        param->getValue(config_min, min);
-        if (param->edit_method != "") // param is enum
-        {
-            initEnumParam(param->name, param->edit_method, param->type, val);
-        }
-        else if (param->type == "bool")
-        {
-            initBoolParam(param->name, boost::any_cast<bool>(val));
-        }
-        else if (param->type == "int")
-        {
-            initIntParam(param->name, boost::any_cast<int>(val), boost::any_cast<int>(min), boost::any_cast<int>(max));
-        }
-        else if (param->type == "double")
-        {
-            initDoubleParam(param->name, boost::any_cast<double>(val), boost::any_cast<double>(min), boost::any_cast<double>(max));
-        }
-        else if (param->type == "str")
-        {
-            initStringParam(param->name, boost::any_cast<std::string>(val));
-        }
-        else
-        {
-            ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
-        }
-        //ROS_INFO_STREAM("Found param " << param->name << " of type " << param->type);
+      GenericParamDescriptionConstPtr p(new GenericParamDescription(param));
+      rvp_params.push_back(p);
+      boost::any val, min, max;
+      param->getValue(roi_viewpoint_planner::PlannerConfig::__getDefault__(), val);
+      param->getValue(roi_viewpoint_planner::PlannerConfig::__getMax__(), max);
+      param->getValue(roi_viewpoint_planner::PlannerConfig::__getMin__(), min);
+      if (param->edit_method != "") // param is enum
+      {
+          initEnumParam(p, val, ui.configRvpLayout);
+      }
+      else if (param->type == "bool")
+      {
+          initBoolParam(p, boost::any_cast<bool>(val), ui.configRvpLayout);
+      }
+      else if (param->type == "int")
+      {
+          initIntParam(p, boost::any_cast<int>(val), boost::any_cast<int>(min), boost::any_cast<int>(max), ui.configRvpLayout);
+      }
+      else if (param->type == "double")
+      {
+          initDoubleParam(p, boost::any_cast<double>(val), boost::any_cast<double>(min), boost::any_cast<double>(max), ui.configRvpLayout);
+      }
+      else if (param->type == "str")
+      {
+          initStringParam(p, boost::any_cast<std::string>(val), ui.configRvpLayout);
+      }
+      else
+      {
+          ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
+      }
     }
-    /*for (const roi_viewpoint_planner::PlannerConfig::AbstractGroupDescriptionConstPtr &group : groups)
+    /*for (const roi_viewpoint_planner::PlannerConfig::AbstractGroupDescriptionConstPtr &group : roi_viewpoint_planner::PlannerConfig::__getGroupDescriptions__())
     {
         ROS_INFO_STREAM("Found group " << group->name);
         for (const auto &param : group->parameters)
@@ -116,133 +115,163 @@ void RoiViewpointPlannerRqtPlugin::initConfigGui()
             ROS_INFO_STREAM("Found param " << param.name << " of type " << param.type << " in group " << group->name);
         }
     }*/
-
+    for (const view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr &param : view_motion_planner::VmpConfig::__getParamDescriptions__())
+    {
+      GenericParamDescriptionConstPtr p(new GenericParamDescription(param));
+      vmp_params.push_back(p);
+      boost::any val, min, max;
+      param->getValue(view_motion_planner::VmpConfig::__getDefault__(), val);
+      param->getValue(view_motion_planner::VmpConfig::__getMax__(), max);
+      param->getValue(view_motion_planner::VmpConfig::__getMin__(), min);
+      if (param->edit_method != "") // param is enum
+      {
+          initEnumParam(p, val, ui.configVmpLayout);
+      }
+      else if (param->type == "bool")
+      {
+          initBoolParam(p, boost::any_cast<bool>(val), ui.configVmpLayout);
+      }
+      else if (param->type == "int")
+      {
+          initIntParam(p, boost::any_cast<int>(val), boost::any_cast<int>(min), boost::any_cast<int>(max), ui.configVmpLayout);
+      }
+      else if (param->type == "double")
+      {
+          initDoubleParam(p, boost::any_cast<double>(val), boost::any_cast<double>(min), boost::any_cast<double>(max), ui.configVmpLayout);
+      }
+      else if (param->type == "str")
+      {
+          initStringParam(p, boost::any_cast<std::string>(val), ui.configVmpLayout);
+      }
+      else
+      {
+          ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
+      }
+    }
 }
 
-void RoiViewpointPlannerRqtPlugin::initEnumParam(const std::string &name, const std::string &enum_description_str, const std::string &type, const boost::any &val)
+void RoiViewpointPlannerRqtPlugin::initEnumParam(const GenericParamDescriptionConstPtr &param, const boost::any &val, QFormLayout *configLayout)
 {
-    QComboBox *cb = new QComboBox();
-    YAML::Node enum_description = YAML::Load(enum_description_str);
-    for (const YAML::Node &node : enum_description["enum"])
-    {
-        QString entry_name = QString::fromStdString(node["name"].as<std::string>());
-        QVariant userdata;
-        if (type == "bool")
-        {
-            userdata = QVariant(node["value"].as<bool>());
-        }
-        else if (type == "int")
-        {
-            userdata = QVariant(node["value"].as<int>());
-        }
-        else if (type == "double")
-        {
-            userdata = QVariant(node["value"].as<double>());
-        }
-        else if (type == "str")
-        {
-            userdata = QVariant(QString::fromStdString(node["value"].as<std::string>()));
-        }
-        entry_name += QString(" (") + userdata.toString() + QString(")");
-        cb->addItem(entry_name, userdata);
-    }
+  QComboBox *cb = new QComboBox();
+  YAML::Node enum_description = YAML::Load(param->edit_method);
+  for (const YAML::Node &node : enum_description["enum"])
+  {
+      QString entry_name = QString::fromStdString(node["name"].as<std::string>());
+      QVariant userdata;
+      if (param->type == "bool")
+      {
+          userdata = QVariant(node["value"].as<bool>());
+      }
+      else if (param->type == "int")
+      {
+          userdata = QVariant(node["value"].as<int>());
+      }
+      else if (param->type == "double")
+      {
+          userdata = QVariant(node["value"].as<double>());
+      }
+      else if (param->type == "str")
+      {
+          userdata = QVariant(QString::fromStdString(node["value"].as<std::string>()));
+      }
+      entry_name += QString(" (") + userdata.toString() + QString(")");
+      cb->addItem(entry_name, userdata);
+  }
 
-    QVariant default_val;
-    if (type == "bool")
-    {
-        default_val = QVariant(boost::any_cast<bool>(val));
-        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_boolComboBox_activated, this, cb, name, _1));
-    }
-    else if (type == "int")
-    {
-        default_val = QVariant(boost::any_cast<int>(val));
-        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intComboBox_activated, this, cb, name, _1));
-    }
-    else if (type == "double")
-    {
-        default_val = QVariant(boost::any_cast<double>(val));
-        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleComboBox_activated, this, cb, name, _1));
-    }
-    else if (type == "str")
-    {
-        default_val = QVariant(QString::fromStdString(boost::any_cast<std::string>(val)));
-        connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_strComboBox_activated, this, cb, name, _1));
-    }
-    int default_index = cb->findData(default_val);
-    if (default_index >= 0)
-        cb->setCurrentIndex(default_index);
+  QVariant default_val;
+  if (param->type == "bool")
+  {
+      default_val = QVariant(boost::any_cast<bool>(val));
+      connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_boolComboBox_activated, this, cb, param, _1));
+  }
+  else if (param->type == "int")
+  {
+      default_val = QVariant(boost::any_cast<int>(val));
+      connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intComboBox_activated, this, cb, param, _1));
+  }
+  else if (param->type == "double")
+  {
+      default_val = QVariant(boost::any_cast<double>(val));
+      connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleComboBox_activated, this, cb, param, _1));
+  }
+  else if (param->type == "str")
+  {
+      default_val = QVariant(QString::fromStdString(boost::any_cast<std::string>(val)));
+      connect(cb, QOverload<int>::of(&QComboBox::activated), this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_strComboBox_activated, this, cb, param, _1));
+  }
+  int default_index = cb->findData(default_val);
+  if (default_index >= 0)
+      cb->setCurrentIndex(default_index);
 
-    comboBox_map[name] = cb;
+  param_widgets[param] = {cb, nullptr};
 
-    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), cb);
+  configLayout->addRow(new QLabel(QString::fromStdString(param->name)), cb);
 }
 
-void RoiViewpointPlannerRqtPlugin::initBoolParam(const std::string &name, bool val)
+void RoiViewpointPlannerRqtPlugin::initBoolParam(const GenericParamDescriptionConstPtr &param, bool val, QFormLayout *configLayout)
 {
-    QCheckBox *cb = new QCheckBox();
-    cb->setChecked(val);
-    connect(cb, &QCheckBox::clicked, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_checkBox_clicked, this, name, _1));
-    checkBox_map[name] = cb;
-    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), cb);
+  QCheckBox *cb = new QCheckBox();
+  cb->setChecked(val);
+  connect(cb, &QCheckBox::clicked, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_checkBox_clicked, this, param, _1));
+  param_widgets[param] = {cb, nullptr};
+  configLayout->addRow(new QLabel(QString::fromStdString(param->name)), cb);
 }
 
-void RoiViewpointPlannerRqtPlugin::initIntParam(const std::string &name, int val, int min, int max)
+void RoiViewpointPlannerRqtPlugin::initIntParam(const GenericParamDescriptionConstPtr &param, int val, int min, int max, QFormLayout *configLayout)
 {
-    QHBoxLayout *layout = new QHBoxLayout();
-    QLabel *minLabel = new QLabel(QString::number(min));
-    QLabel *maxLabel = new QLabel(QString::number(max));
-    QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
-    slider->setMaximum(100);
-    intSlider_setValue(slider, name, val);
-    QSpinBox *spinBox = new QSpinBox();
-    spinBox->setMinimum(min);
-    spinBox->setMaximum(max);
-    spinBox->setValue(val);
-    layout->addWidget(minLabel);
-    layout->addWidget(slider);
-    layout->addWidget(maxLabel);
-    layout->addWidget(spinBox);
-    connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved, this, spinBox, name, _1));
-    connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased, this, spinBox, name));
-    connect(spinBox, &QSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished, this, spinBox, slider, name));
-    slider_map[name] = slider;
-    spinBox_map[name] = spinBox;
-    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), layout);
+  QHBoxLayout *layout = new QHBoxLayout();
+  QLabel *minLabel = new QLabel(QString::number(min));
+  QLabel *maxLabel = new QLabel(QString::number(max));
+  QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
+  slider->setMaximum(100);
+  intSlider_setValue(slider, param, val);
+  QSpinBox *spinBox = new QSpinBox();
+  spinBox->setMinimum(min);
+  spinBox->setMaximum(max);
+  spinBox->setValue(val);
+  layout->addWidget(minLabel);
+  layout->addWidget(slider);
+  layout->addWidget(maxLabel);
+  layout->addWidget(spinBox);
+  connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved, this, spinBox, param, _1));
+  connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased, this, spinBox, param));
+  connect(spinBox, &QSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished, this, spinBox, slider, param));
+  configLayout->addRow(new QLabel(QString::fromStdString(param->name)), layout);
+  param_widgets[param] = {spinBox, slider};
 }
 
-void RoiViewpointPlannerRqtPlugin::initDoubleParam(const std::string &name, double val, double min, double max)
+void RoiViewpointPlannerRqtPlugin::initDoubleParam(const GenericParamDescriptionConstPtr &param, double val, double min, double max, QFormLayout *configLayout)
 {
-    QHBoxLayout *layout = new QHBoxLayout();
-    QLabel *minLabel = new QLabel(QString::number(min));
-    QLabel *maxLabel = new QLabel(QString::number(max));
-    QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
-    slider->setMaximum(100);
-    doubleSlider_setValue(slider, name, val);
-    QDoubleSpinBox *spinBox = new QDoubleSpinBox();
-    spinBox->setMinimum(min);
-    spinBox->setMaximum(max);
-    int exponent = QString::number(max-min, 'e', 0).split('e').last().toInt();
-    spinBox->setSingleStep(std::pow(10.0, exponent-1));
-    spinBox->setValue(val);
-    layout->addWidget(minLabel);
-    layout->addWidget(slider);
-    layout->addWidget(maxLabel);
-    layout->addWidget(spinBox);
-    connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved, this, spinBox, name, _1));
-    connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased, this, spinBox, name));
-    connect(spinBox, &QDoubleSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished, this, spinBox, slider, name));
-    slider_map[name] = slider;
-    spinBox_map[name] = spinBox;
-    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), layout);
+  QHBoxLayout *layout = new QHBoxLayout();
+  QLabel *minLabel = new QLabel(QString::number(min));
+  QLabel *maxLabel = new QLabel(QString::number(max));
+  QSlider *slider = new QSlider(Qt::Orientation::Horizontal);
+  slider->setMaximum(100);
+  doubleSlider_setValue(slider, param, val);
+  QDoubleSpinBox *spinBox = new QDoubleSpinBox();
+  spinBox->setMinimum(min);
+  spinBox->setMaximum(max);
+  int exponent = QString::number(max-min, 'e', 0).split('e').last().toInt();
+  spinBox->setSingleStep(std::pow(10.0, exponent-1));
+  spinBox->setValue(val);
+  layout->addWidget(minLabel);
+  layout->addWidget(slider);
+  layout->addWidget(maxLabel);
+  layout->addWidget(spinBox);
+  connect(slider, &QSlider::sliderMoved, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved, this, spinBox, param, _1));
+  connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased, this, spinBox, param));
+  connect(spinBox, &QDoubleSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished, this, spinBox, slider, param));
+  configLayout->addRow(new QLabel(QString::fromStdString(param->name)), layout);
+  param_widgets[param] = {spinBox, slider};
 }
 
-void RoiViewpointPlannerRqtPlugin::initStringParam(const std::string &name, const std::string &val)
+void RoiViewpointPlannerRqtPlugin::initStringParam(const GenericParamDescriptionConstPtr &param, const std::string &val, QFormLayout *configLayout)
 {
-    QLineEdit *le = new QLineEdit();
-    le->setText(QString::fromStdString(val));
-    connect(le, &QLineEdit::textEdited, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited, this, name, _1));
-    lineEdit_map[name] = le;
-    ui.configLayout->addRow(new QLabel(QString::fromStdString(name)), le);
+  QLineEdit *le = new QLineEdit();
+  le->setText(QString::fromStdString(val));
+  connect(le, &QLineEdit::textEdited, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited, this, param, _1));
+  configLayout->addRow(new QLabel(QString::fromStdString(param->name)), le);
+  param_widgets[param] = {le, nullptr};
 }
 
 void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
@@ -275,7 +304,7 @@ void triggerConfiguration()
   // Usually used to open a dialog to offer the user a set of configuration
 }*/
 
-void RoiViewpointPlannerRqtPlugin::intSlider_setValue(QSlider *slider, const std::string &param, int value)
+void RoiViewpointPlannerRqtPlugin::intSlider_setValue(QSlider *slider, const GenericParamDescriptionConstPtr &param, int value)
 {
   int minVal = getMin<int>(param);
   int maxVal = getMax<int>(param);
@@ -283,36 +312,36 @@ void RoiViewpointPlannerRqtPlugin::intSlider_setValue(QSlider *slider, const std
   slider->setValue(position);
 }
 
-void RoiViewpointPlannerRqtPlugin::intSpinBox_setPosition(QSpinBox *spinBox, const std::string &param, int position)
+void RoiViewpointPlannerRqtPlugin::intSpinBox_setPosition(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position)
 {
   int minVal = getMin<int>(param);
   int maxVal = getMax<int>(param);
   spinBox->setValue(minVal + position * (maxVal - minVal) / 100);
 }
 
-void RoiViewpointPlannerRqtPlugin::intValue_sendConfig(QSpinBox *spinBox, const std::string &param)
+void RoiViewpointPlannerRqtPlugin::intValue_sendConfig(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param)
 {
   setValue<int>(param, spinBox->value());
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved(QSpinBox *spinBox, const std::string &param, int position)
+void RoiViewpointPlannerRqtPlugin::on_intSlider_sliderMoved(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position)
 {
   intSpinBox_setPosition(spinBox, param, position);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased(QSpinBox *spinBox, const std::string &param)
+void RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param)
 {
   intValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished(QSpinBox *spinBox, QSlider *slider, const std::string &param)
+void RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished(QSpinBox *spinBox, QSlider *slider, const GenericParamDescriptionConstPtr &param)
 {
   intSlider_setValue(slider, param, spinBox->value());
   intValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::doubleSlider_setValue(QSlider *slider, const std::string &param, double value)
+void RoiViewpointPlannerRqtPlugin::doubleSlider_setValue(QSlider *slider, const GenericParamDescriptionConstPtr &param, double value)
 {
   double minVal = getMin<double>(param);
   double maxVal = getMax<double>(param);
@@ -320,103 +349,114 @@ void RoiViewpointPlannerRqtPlugin::doubleSlider_setValue(QSlider *slider, const 
   slider->setValue(position);
 }
 
-void RoiViewpointPlannerRqtPlugin::doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const std::string &param, int position)
+void RoiViewpointPlannerRqtPlugin::doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position)
 {
   double minVal = getMin<double>(param);
   double maxVal = getMax<double>(param);
   spinBox->setValue(minVal + static_cast<double>(position) / 100.0 * (maxVal - minVal));
 }
 
-void RoiViewpointPlannerRqtPlugin::doubleValue_sendConfig(QDoubleSpinBox *spinBox, const std::string &param)
+void RoiViewpointPlannerRqtPlugin::doubleValue_sendConfig(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param)
 {
   setValue<double>(param, spinBox->value());
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const std::string &param, int position)
+void RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position)
 {
   doubleSpinBox_setPosition(spinBox, param, position);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased(QDoubleSpinBox *spinBox, const std::string &param)
+void RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param)
 {
   doubleValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished(QDoubleSpinBox *spinBox, QSlider *slider, const std::string &param)
+void RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished(QDoubleSpinBox *spinBox, QSlider *slider, const GenericParamDescriptionConstPtr &param)
 {
   doubleSlider_setValue(slider, param, spinBox->value());
   doubleValue_sendConfig(spinBox, param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_boolComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
+void RoiViewpointPlannerRqtPlugin::on_boolComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index)
 {
   QVariant val = comboBox->itemData(index);
   setValue<bool>(param, val.toBool());
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_intComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
+void RoiViewpointPlannerRqtPlugin::on_intComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index)
 {
   QVariant val = comboBox->itemData(index);
   setValue<int>(param, val.toInt());
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_doubleComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
+void RoiViewpointPlannerRqtPlugin::on_doubleComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index)
 {
   QVariant val = comboBox->itemData(index);
   setValue<double>(param, val.toDouble());
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_strComboBox_activated(QComboBox *comboBox, const std::string &param, int index)
+void RoiViewpointPlannerRqtPlugin::on_strComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index)
 {
   QVariant val = comboBox->itemData(index);
   setValue<std::string>(param, val.toString().toStdString());
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_checkBox_clicked(const std::string &param, bool checked)
+void RoiViewpointPlannerRqtPlugin::on_checkBox_clicked(const GenericParamDescriptionConstPtr &param, bool checked)
 {
   setValue<bool>(param, checked);
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited(const std::string &param, const QString &text)
+void RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited(const GenericParamDescriptionConstPtr &param, const QString &text)
 {
   setValue<std::string>(param, text.toStdString());
   sendConfig(param);
 }
 
-void RoiViewpointPlannerRqtPlugin::sendConfig(const std::string &changed_param)
+void RoiViewpointPlannerRqtPlugin::sendConfig(const GenericParamDescriptionConstPtr &changed_param)
 {
-  if (!configClient->setConfiguration(current_config))
-    ui.statusTextBox->setText(QString::fromStdString(changed_param) + " change failed");
-  else
-    ui.statusTextBox->setText(QString::fromStdString(changed_param) + " change successful");
+  if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(changed_param->param))
+  {
+    if (!rvpConfigClient->setConfiguration(rvp_current_config))
+      ui.statusTextBox->setText(QString::fromStdString(changed_param->name) + " change failed");
+    else
+      ui.statusTextBox->setText(QString::fromStdString(changed_param->name) + " change successful");
+    return;
+  }
+  if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(changed_param->param))
+  {
+    if (!vmpConfigClient->setConfiguration(vmp_current_config))
+      ui.statusTextBox->setText(QString::fromStdString(changed_param->name) + " change failed");
+    else
+      ui.statusTextBox->setText(QString::fromStdString(changed_param->name) + " change successful");
+    return;
+  }
+
 }
 
-void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
+void RoiViewpointPlannerRqtPlugin::rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig &received_config)
 {
   // ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
-  current_config = received_config;
-  for (const auto &pair : parameter_map)
+  rvp_current_config = received_config;
+  for (const GenericParamDescriptionConstPtr &param : rvp_params)
   {
-    const std::string &name = pair.first;
-    const roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr &param = pair.second;
     if (param->edit_method != "") // param is enum
     {
-        QComboBox *cb = comboBox_map[name];
+        QComboBox *cb = reinterpret_cast<QComboBox*>(param_widgets[param].widget);
         QVariant val;
         if (param->type == "bool")
-            val = QVariant(getValue<bool>(name));
+            val = QVariant(getValue<bool>(param));
         else if (param->type == "int")
-            val = QVariant(getValue<int>(name));
+            val = QVariant(getValue<int>(param));
         else if (param->type == "double")
-            val = QVariant(getValue<double>(name));
+            val = QVariant(getValue<double>(param));
         else if (param->type == "str")
-            val = QVariant(QString::fromStdString(getValue<std::string>(name)));
+            val = QVariant(QString::fromStdString(getValue<std::string>(param)));
 
         int index = cb->findData(val);
         if (index >= 0)
@@ -424,35 +464,89 @@ void RoiViewpointPlannerRqtPlugin::configChanged(const roi_viewpoint_planner::Pl
     }
     else if (param->type == "bool")
     {
-        QCheckBox *cb = checkBox_map[name];
-        cb->setChecked(getValue<bool>(name));
+        QCheckBox *cb = reinterpret_cast<QCheckBox*>(param_widgets[param].widget);
+        cb->setChecked(getValue<bool>(param));
     }
     else if (param->type == "int")
     {
-        QSlider *slider = slider_map[name];
-        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(spinBox_map[name]);
-        intSlider_setValue(slider, name, getValue<int>(name));
-        spinBox->setValue(getValue<int>(name));
+        QSlider *slider = param_widgets[param].slider;
+        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(param_widgets[param].widget);
+        intSlider_setValue(slider, param, getValue<int>(param));
+        spinBox->setValue(getValue<int>(param));
     }
     else if (param->type == "double")
     {
-        QSlider *slider = slider_map[name];
-        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(spinBox_map[name]);
-        doubleSlider_setValue(slider, name, getValue<double>(name));
-        spinBox->setValue(getValue<double>(name));
+        QSlider *slider = param_widgets[param].slider;
+        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(param_widgets[param].widget);
+        doubleSlider_setValue(slider, param, getValue<double>(param));
+        spinBox->setValue(getValue<double>(param));
     }
     else if (param->type == "str")
     {
-        QLineEdit *le = lineEdit_map[name];
-        le->setText(QString::fromStdString(getValue<std::string>(name)));
+        QLineEdit *le = reinterpret_cast<QLineEdit*>(param_widgets[param].widget);
+        le->setText(QString::fromStdString(getValue<std::string>(param)));
     }
     else
     {
         ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
     }
   }
-  ui.moveArmComboBox->setEnabled(current_config.mode < 2);
-  ui.moveArmPushButton->setEnabled(current_config.mode < 2);
+  ui.moveArmComboBox->setEnabled(rvp_current_config.mode < 2);
+  ui.moveArmPushButton->setEnabled(rvp_current_config.mode < 2);
+}
+
+void RoiViewpointPlannerRqtPlugin::vmpConfigChanged(const view_motion_planner::VmpConfig &received_config)
+{
+  // ROS_INFO_STREAM("Config changed slot is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  vmp_current_config = received_config;
+  for (const GenericParamDescriptionConstPtr &param : vmp_params)
+  {
+    if (param->edit_method != "") // param is enum
+    {
+        QComboBox *cb = reinterpret_cast<QComboBox*>(param_widgets[param].widget);
+        QVariant val;
+        if (param->type == "bool")
+            val = QVariant(getValue<bool>(param));
+        else if (param->type == "int")
+            val = QVariant(getValue<int>(param));
+        else if (param->type == "double")
+            val = QVariant(getValue<double>(param));
+        else if (param->type == "str")
+            val = QVariant(QString::fromStdString(getValue<std::string>(param)));
+
+        int index = cb->findData(val);
+        if (index >= 0)
+            cb->setCurrentIndex(index);
+    }
+    else if (param->type == "bool")
+    {
+        QCheckBox *cb = reinterpret_cast<QCheckBox*>(param_widgets[param].widget);
+        cb->setChecked(getValue<bool>(param));
+    }
+    else if (param->type == "int")
+    {
+        QSlider *slider = param_widgets[param].slider;
+        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(param_widgets[param].widget);
+        intSlider_setValue(slider, param, getValue<int>(param));
+        spinBox->setValue(getValue<int>(param));
+    }
+    else if (param->type == "double")
+    {
+        QSlider *slider = param_widgets[param].slider;
+        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(param_widgets[param].widget);
+        doubleSlider_setValue(slider, param, getValue<double>(param));
+        spinBox->setValue(getValue<double>(param));
+    }
+    else if (param->type == "str")
+    {
+        QLineEdit *le = reinterpret_cast<QLineEdit*>(param_widgets[param].widget);
+        le->setText(QString::fromStdString(getValue<std::string>(param)));
+    }
+    else
+    {
+        ROS_WARN_STREAM("Type " << param->type << " of parameter " << param->name << " not implemented");
+    }
+  }
 }
 
 void RoiViewpointPlannerRqtPlugin::planRequest(bool enable)
@@ -481,11 +575,19 @@ void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc)
 }
 
 // DO NOT DIRECTLY UPDATE UI ELEMENTS HERE
-void RoiViewpointPlannerRqtPlugin::configCallback(const roi_viewpoint_planner::PlannerConfig &conf)
+void RoiViewpointPlannerRqtPlugin::rvpConfigCallback(const roi_viewpoint_planner::PlannerConfig &conf)
 {
-  ROS_INFO_STREAM("Config callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
-  ROS_INFO_STREAM("Config callback called");
-  emit configChangedSignal(conf);
+  //ROS_INFO_STREAM("Config callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  ROS_INFO_STREAM("RVP config callback called");
+  emit rvpConfigChangedSignal(conf);
+}
+
+// DO NOT DIRECTLY UPDATE UI ELEMENTS HERE
+void RoiViewpointPlannerRqtPlugin::vmpConfigCallback(const view_motion_planner::VmpConfig &conf)
+{
+  //ROS_INFO_STREAM("Config callback is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
+  ROS_INFO_STREAM("VMP config callback called");
+  emit vmpConfigChangedSignal(conf);
 }
 
 // DO NOT DIRECTLY UPDATE UI ELEMENTS HERE

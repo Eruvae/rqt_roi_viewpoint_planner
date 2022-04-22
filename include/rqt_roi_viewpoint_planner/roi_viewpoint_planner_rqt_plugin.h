@@ -20,13 +20,49 @@
 #include <roi_viewpoint_planner_msgs/MoveToState.h>
 #include <roi_viewpoint_planner_msgs/RandomizePlantPositions.h>
 #include <roi_viewpoint_planner_msgs/StartEvaluator.h>
+#include <roi_viewpoint_planner_msgs/VmpConfig.h>
 #include <std_srvs/Trigger.h>
 #include <std_srvs/Empty.h>
-#include <unordered_map>
+#include <boost/unordered_map.hpp>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
+#include <yaml-cpp/yaml.h>
 
 namespace rqt_roi_viewpoint_planner
 {
+
+struct GenericParamDescription
+{
+  std::variant<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr, view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr> param;
+
+  const std::string &name;
+  const std::string &type;
+  const uint32_t &level;
+  const std::string &description;
+  const std::string &edit_method;
+
+  GenericParamDescription(const roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr &p)
+    : param(p),
+      name(p->name),
+      type(p->type),
+      level(p->level),
+      description(p->description),
+      edit_method(p->edit_method)
+  {}
+
+  GenericParamDescription(const view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr &p)
+    : param(p),
+      name(p->name),
+      type(p->type),
+      level(p->level),
+      description(p->description),
+      edit_method(p->edit_method)
+  {}
+};
+
+using GenericParamDescriptionConstPtr = boost::shared_ptr<const GenericParamDescription>;
+
+using RvpParamMap = boost::unordered_map<std::string, roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>;
+using VmpParamMap = boost::unordered_map<std::string, view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>;
 
 class MoveToStateThread : public QThread {
   Q_OBJECT
@@ -92,21 +128,22 @@ private slots:
   void on_resetMapPushButton_clicked();
   void on_moveArmPushButton_clicked();
 
-  void on_boolComboBox_activated(QComboBox *comboBox, const std::string &param, int index);
-  void on_intComboBox_activated(QComboBox *comboBox, const std::string &param, int index);
-  void on_doubleComboBox_activated(QComboBox *comboBox, const std::string &param, int index);
-  void on_strComboBox_activated(QComboBox *comboBox, const std::string &param, int index);
-  void on_checkBox_clicked(const std::string &param, bool checked);
-  void on_lineEdit_textEdited(const std::string &param, const QString &text);
-  void on_intSlider_sliderMoved(QSpinBox *spinBox, const std::string &param, int position);
-  void on_intSlider_sliderReleased(QSpinBox *spinBox, const std::string &param);
-  void on_intSpinBox_editingFinished(QSpinBox *spinBox, QSlider *slider, const std::string &param);
-  void on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const std::string &param, int position);
-  void on_doubleSlider_sliderReleased(QDoubleSpinBox *spinBox, const std::string &param);
-  void on_doubleSpinBox_editingFinished(QDoubleSpinBox *spinBox, QSlider *slider, const std::string &param);
+  void on_boolComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
+  void on_intComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
+  void on_doubleComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
+  void on_strComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
+  void on_checkBox_clicked(const GenericParamDescriptionConstPtr &param, bool checked);
+  void on_lineEdit_textEdited(const GenericParamDescriptionConstPtr &param, const QString &text);
+  void on_intSlider_sliderMoved(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
+  void on_intSlider_sliderReleased(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
+  void on_intSpinBox_editingFinished(QSpinBox *spinBox, QSlider *slider, const GenericParamDescriptionConstPtr &param);
+  void on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
+  void on_doubleSlider_sliderReleased(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
+  void on_doubleSpinBox_editingFinished(QDoubleSpinBox *spinBox, QSlider *slider, const GenericParamDescriptionConstPtr &param);
 
   // Internal slots
-  void configChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
+  void rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
+  void vmpConfigChanged(const view_motion_planner::VmpConfig &received_config);
   void planRequest(bool enable);
   void plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
@@ -115,7 +152,8 @@ private slots:
 
 signals:
   // Internal signals
-  void configChangedSignal(const roi_viewpoint_planner::PlannerConfig &received_config);
+  void rvpConfigChangedSignal(const roi_viewpoint_planner::PlannerConfig &received_config);
+  void vmpConfigChangedSignal(const view_motion_planner::VmpConfig &received_config);
   void planRequestSignal(bool enable);
   void plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
@@ -133,7 +171,8 @@ private:
   Ui::RoiViewpointPlannerRqtPlugin ui;
   QWidget* widget;
   std::unique_ptr<MoveToStateThread> moveToStateThread;
-  roi_viewpoint_planner::PlannerConfig current_config;
+  roi_viewpoint_planner::PlannerConfig rvp_current_config;
+  view_motion_planner::VmpConfig vmp_current_config;
   ros::ServiceClient saveOctomapClient;
   ros::ServiceClient loadOctomapClient;
   ros::ServiceClient resetOctomapClient;
@@ -144,75 +183,132 @@ private:
 
   ros::ServiceServer confirmPlanExecutionServer;
 
-  dynamic_reconfigure::Client<roi_viewpoint_planner::PlannerConfig> *configClient;
+  dynamic_reconfigure::Client<roi_viewpoint_planner::PlannerConfig> *rvpConfigClient;
+  dynamic_reconfigure::Client<view_motion_planner::VmpConfig> *vmpConfigClient;
 
-  std::unordered_map<std::string, roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr> parameter_map;
-  std::unordered_map<std::string, QComboBox*> comboBox_map;
-  std::unordered_map<std::string, QCheckBox*> checkBox_map;
-  std::unordered_map<std::string, QSlider*> slider_map;
-  std::unordered_map<std::string, QAbstractSpinBox*> spinBox_map;
-  std::unordered_map<std::string, QLineEdit*> lineEdit_map;
+  struct ParamWidget
+  {
+    QWidget *widget = nullptr;
+    QSlider *slider = nullptr;
+  };
+
+  using ParamWidgetMap = boost::unordered_map<GenericParamDescriptionConstPtr, ParamWidget>;
+
+  std::vector<GenericParamDescriptionConstPtr> rvp_params;
+  std::vector<GenericParamDescriptionConstPtr> vmp_params;
+  ParamWidgetMap param_widgets;
 
   void initConfigGui();
-  void initEnumParam(const std::string &name, const std::string &enum_description_str, const std::string &type, const boost::any &val);
-  void initBoolParam(const std::string &name, bool val);
-  void initIntParam(const std::string &name, int val, int min, int max);
-  void initDoubleParam(const std::string &name, double val, double min, double max);
-  void initStringParam(const std::string &name, const std::string &val);
+
+  void initEnumParam(const GenericParamDescriptionConstPtr &param, const boost::any &val, QFormLayout *configLayout);
+  void initBoolParam(const GenericParamDescriptionConstPtr &param, bool val, QFormLayout *configLayout);
+  void initIntParam(const GenericParamDescriptionConstPtr &param, int val, int min, int max, QFormLayout *configLayout);
+  void initDoubleParam(const GenericParamDescriptionConstPtr &param, double val, double min, double max, QFormLayout *configLayout);
+  void initStringParam(const GenericParamDescriptionConstPtr &param, const std::string &val, QFormLayout *configLayout);
 
   void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc);
-  void configCallback(const roi_viewpoint_planner::PlannerConfig &conf);
+  void rvpConfigCallback(const roi_viewpoint_planner::PlannerConfig &conf);
+  void vmpConfigCallback(const view_motion_planner::VmpConfig &conf);
   bool confirmPlanExecutionCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   void plannerStateCallback(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
-  void intSlider_setValue(QSlider *slider, const std::string &param, int value);
-  void intSpinBox_setPosition(QSpinBox *spinBox, const std::string &param, int position);
-  void intValue_sendConfig(QSpinBox *spinBox, const std::string &param);
+  void intSlider_setValue(QSlider *slider, const GenericParamDescriptionConstPtr &param, int value);
+  void intSpinBox_setPosition(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
+  void intValue_sendConfig(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
 
-  void doubleSlider_setValue(QSlider *slider, const std::string &param, double value);
-  void doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const std::string &param, int position);
-  void doubleValue_sendConfig(QDoubleSpinBox *spinBox, const std::string &param);
+  void doubleSlider_setValue(QSlider *slider, const GenericParamDescriptionConstPtr &param, double value);
+  void doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
+  void doubleValue_sendConfig(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
 
-  void sendConfig(const std::string &changed_param);
+  void sendConfig(const GenericParamDescriptionConstPtr &changed_param);
 
   template <typename T>
-  T getValue(const std::string &param)
+  T getValue(const GenericParamDescriptionConstPtr &param)
   {
+    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
       boost::any val;
-      parameter_map[param]->getValue(current_config, val);
+      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(rvp_current_config, val);
       return boost::any_cast<T>(val);
+    }
+    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
+      boost::any val;
+      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(vmp_current_config, val);
+      return boost::any_cast<T>(val);
+    }
+    return T();
   }
 
   template <typename T>
-  T getMin(const std::string &param)
+  T getMin(const GenericParamDescriptionConstPtr &param)
   {
+    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
       boost::any val;
-      parameter_map[param]->getValue(roi_viewpoint_planner::PlannerConfig::__getMin__(), val);
+      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(roi_viewpoint_planner::PlannerConfig::__getMin__(), val);
       return boost::any_cast<T>(val);
+    }
+    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
+      boost::any val;
+      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(view_motion_planner::VmpConfig::__getMin__(), val);
+      return boost::any_cast<T>(val);
+    }
+    return T();
   }
 
   template <typename T>
-  T getMax(const std::string &param)
+  T getMax(const GenericParamDescriptionConstPtr &param)
   {
+    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
       boost::any val;
-      parameter_map[param]->getValue(roi_viewpoint_planner::PlannerConfig::__getMax__(), val);
+      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(roi_viewpoint_planner::PlannerConfig::__getMax__(), val);
       return boost::any_cast<T>(val);
+    }
+    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
+      boost::any val;
+      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(view_motion_planner::VmpConfig::__getMax__(), val);
+      return boost::any_cast<T>(val);
+    }
+    return T();
   }
 
   template <typename T>
-  T getDefault(const std::string &param)
+  T getDefault(const GenericParamDescriptionConstPtr &param)
   {
+    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
       boost::any val;
-      parameter_map[param]->getValue(roi_viewpoint_planner::PlannerConfig::__getDefault__(), val);
+      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(roi_viewpoint_planner::PlannerConfig::__getDefault__(), val);
       return boost::any_cast<T>(val);
+    }
+    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
+      boost::any val;
+      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(view_motion_planner::VmpConfig::__getDefault__(), val);
+      return boost::any_cast<T>(val);
+    }
+    return T();
   }
 
   template <typename T>
-  void setValue(const std::string &param, T val)
+  void setValue(const GenericParamDescriptionConstPtr &param, T val)
   {
-      roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr abstr_pd = parameter_map[param];
-      const roi_viewpoint_planner::PlannerConfig::ParamDescription<T> *pd = reinterpret_cast<const roi_viewpoint_planner::PlannerConfig::ParamDescription<T>*>(abstr_pd.get());
-      current_config.*(pd->field) = val;
+    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
+      const roi_viewpoint_planner::PlannerConfig::ParamDescription<T> *pd = reinterpret_cast<const roi_viewpoint_planner::PlannerConfig::ParamDescription<T>*>(std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param).get());
+      rvp_current_config.*(pd->field) = val;
+      return;
+    }
+    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
+    {
+      const view_motion_planner::VmpConfig::ParamDescription<T> *pd = reinterpret_cast<const view_motion_planner::VmpConfig::ParamDescription<T>*>(std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param).get());
+      vmp_current_config.*(pd->field) = val;
+      return;
+    }
   }
 };
 
