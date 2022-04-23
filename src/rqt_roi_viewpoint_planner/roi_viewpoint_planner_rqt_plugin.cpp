@@ -203,7 +203,7 @@ void RoiViewpointPlannerRqtPlugin::initEnumParam(const AbstractParamPtr &param, 
   if (default_index >= 0)
       cb->setCurrentIndex(default_index);
 
-  param_widgets[param] = {cb, nullptr};
+  param->widget = cb;
 
   configLayout->addRow(new QLabel(QString::fromStdString(param->name)), cb);
 }
@@ -213,7 +213,7 @@ void RoiViewpointPlannerRqtPlugin::initBoolParam(const AbstractParamPtr &param, 
   QCheckBox *cb = new QCheckBox();
   cb->setChecked(boost::any_cast<bool>(param->getDefault()));
   connect(cb, &QCheckBox::clicked, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_checkBox_clicked, this, param, _1));
-  param_widgets[param] = {cb, nullptr};
+  param->widget = cb;
   configLayout->addRow(new QLabel(QString::fromStdString(param->name)), cb);
 }
 
@@ -240,7 +240,8 @@ void RoiViewpointPlannerRqtPlugin::initIntParam(const AbstractParamPtr &param, Q
   connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSlider_sliderReleased, this, spinBox, param));
   connect(spinBox, &QSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_intSpinBox_editingFinished, this, spinBox, slider, param));
   configLayout->addRow(new QLabel(QString::fromStdString(param->name)), layout);
-  param_widgets[param] = {spinBox, slider};
+  param->widget = spinBox;
+  param->slider = slider;
 }
 
 void RoiViewpointPlannerRqtPlugin::initDoubleParam(const AbstractParamPtr &param, QFormLayout *configLayout)
@@ -268,7 +269,8 @@ void RoiViewpointPlannerRqtPlugin::initDoubleParam(const AbstractParamPtr &param
   connect(slider, &QSlider::sliderReleased, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSlider_sliderReleased, this, spinBox, param));
   connect(spinBox, &QDoubleSpinBox::editingFinished, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_doubleSpinBox_editingFinished, this, spinBox, slider, param));
   configLayout->addRow(new QLabel(QString::fromStdString(param->name)), layout);
-  param_widgets[param] = {spinBox, slider};
+  param->widget = spinBox;
+  param->slider = slider;
 }
 
 void RoiViewpointPlannerRqtPlugin::initStringParam(const AbstractParamPtr &param, QFormLayout *configLayout)
@@ -277,7 +279,7 @@ void RoiViewpointPlannerRqtPlugin::initStringParam(const AbstractParamPtr &param
   le->setText(QString::fromStdString(boost::any_cast<std::string>(param->getDefault())));
   connect(le, &QLineEdit::textEdited, this, boost::bind(&RoiViewpointPlannerRqtPlugin::on_lineEdit_textEdited, this, param, _1));
   configLayout->addRow(new QLabel(QString::fromStdString(param->name)), le);
-  param_widgets[param] = {le, nullptr};
+  param->widget = le;
 }
 
 void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
@@ -453,7 +455,7 @@ void RoiViewpointPlannerRqtPlugin::rvpConfigChanged(const roi_viewpoint_planner:
   {
     if (param->edit_method != "") // param is enum
     {
-        QComboBox *cb = reinterpret_cast<QComboBox*>(param_widgets[param].widget);
+        QComboBox *cb = reinterpret_cast<QComboBox*>(param->widget);
         QVariant val;
         if (param->type == "bool")
             val = QVariant(boost::any_cast<bool>(param->getValue()));
@@ -470,26 +472,26 @@ void RoiViewpointPlannerRqtPlugin::rvpConfigChanged(const roi_viewpoint_planner:
     }
     else if (param->type == "bool")
     {
-        QCheckBox *cb = reinterpret_cast<QCheckBox*>(param_widgets[param].widget);
+        QCheckBox *cb = reinterpret_cast<QCheckBox*>(param->widget);
         cb->setChecked(boost::any_cast<bool>(param->getValue()));
     }
     else if (param->type == "int")
     {
-        QSlider *slider = param_widgets[param].slider;
-        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(param_widgets[param].widget);
+        QSlider *slider = param->slider;
+        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(param->widget);
         intSlider_setValue(slider, param, boost::any_cast<int>(param->getValue()));
         spinBox->setValue(boost::any_cast<int>(param->getValue()));
     }
     else if (param->type == "double")
     {
-        QSlider *slider = param_widgets[param].slider;
-        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(param_widgets[param].widget);
+        QSlider *slider = param->slider;
+        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(param->widget);
         doubleSlider_setValue(slider, param, boost::any_cast<double>(param->getValue()));
         spinBox->setValue(boost::any_cast<double>(param->getValue()));
     }
     else if (param->type == "str")
     {
-        QLineEdit *le = reinterpret_cast<QLineEdit*>(param_widgets[param].widget);
+        QLineEdit *le = reinterpret_cast<QLineEdit*>(param->widget);
         le->setText(QString::fromStdString(boost::any_cast<std::string>(param->getValue())));
     }
     else
@@ -509,7 +511,7 @@ void RoiViewpointPlannerRqtPlugin::vmpConfigChanged(const view_motion_planner::V
   {
     if (param->edit_method != "") // param is enum
     {
-        QComboBox *cb = reinterpret_cast<QComboBox*>(param_widgets[param].widget);
+        QComboBox *cb = reinterpret_cast<QComboBox*>(param->widget);
         QVariant val;
         if (param->type == "bool")
             val = QVariant(boost::any_cast<bool>(param->getValue()));
@@ -526,26 +528,26 @@ void RoiViewpointPlannerRqtPlugin::vmpConfigChanged(const view_motion_planner::V
     }
     else if (param->type == "bool")
     {
-        QCheckBox *cb = reinterpret_cast<QCheckBox*>(param_widgets[param].widget);
+        QCheckBox *cb = reinterpret_cast<QCheckBox*>(param->widget);
         cb->setChecked(boost::any_cast<bool>(param->getValue()));
     }
     else if (param->type == "int")
     {
-        QSlider *slider = param_widgets[param].slider;
-        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(param_widgets[param].widget);
+        QSlider *slider = param->slider;
+        QSpinBox *spinBox = reinterpret_cast<QSpinBox*>(param->widget);
         intSlider_setValue(slider, param, boost::any_cast<int>(param->getValue()));
         spinBox->setValue(boost::any_cast<int>(param->getValue()));
     }
     else if (param->type == "double")
     {
-        QSlider *slider = param_widgets[param].slider;
-        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(param_widgets[param].widget);
+        QSlider *slider = param->slider;
+        QDoubleSpinBox *spinBox = reinterpret_cast<QDoubleSpinBox*>(param->widget);
         doubleSlider_setValue(slider, param, boost::any_cast<double>(param->getValue()));
         spinBox->setValue(boost::any_cast<double>(param->getValue()));
     }
     else if (param->type == "str")
     {
-        QLineEdit *le = reinterpret_cast<QLineEdit*>(param_widgets[param].widget);
+        QLineEdit *le = reinterpret_cast<QLineEdit*>(param->widget);
         le->setText(QString::fromStdString(boost::any_cast<std::string>(param->getValue())));
     }
     else

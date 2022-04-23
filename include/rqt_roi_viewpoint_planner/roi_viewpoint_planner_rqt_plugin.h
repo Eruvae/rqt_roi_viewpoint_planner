@@ -40,6 +40,9 @@ public:
   const std::string description;
   const std::string edit_method;
 
+  QWidget *widget = nullptr;
+  QSlider *slider = nullptr;
+
   AbstractParam(const std::string name, const std::string type, const uint32_t level, const std::string description, const std::string edit_method)
     : name(name),
       type(type),
@@ -150,9 +153,6 @@ AbstractParamPtr initializeParam(const typename C::AbstractParamDescriptionConst
     return nullptr;
   }
 }
-
-using RvpParamMap = boost::unordered_map<std::string, roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>;
-using VmpParamMap = boost::unordered_map<std::string, view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>;
 
 class MoveToStateThread : public QThread {
   Q_OBJECT
@@ -276,17 +276,8 @@ private:
   dynamic_reconfigure::Client<roi_viewpoint_planner::PlannerConfig> *rvpConfigClient;
   dynamic_reconfigure::Client<view_motion_planner::VmpConfig> *vmpConfigClient;
 
-  struct ParamWidget
-  {
-    QWidget *widget = nullptr;
-    QSlider *slider = nullptr;
-  };
-
-  using ParamWidgetMap = boost::unordered_map<AbstractParamPtr, ParamWidget>;
-
   std::vector<AbstractParamPtr> rvp_params;
   std::vector<AbstractParamPtr> vmp_params;
-  ParamWidgetMap param_widgets;
 
   void initConfigGui();
 
