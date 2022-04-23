@@ -30,36 +30,126 @@
 namespace rqt_roi_viewpoint_planner
 {
 
-struct GenericParamDescription
+
+class AbstractParam
 {
-  std::variant<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr, view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr> param;
+public:
+  const std::string name;
+  const std::string type;
+  const uint32_t level;
+  const std::string description;
+  const std::string edit_method;
 
-  const std::string &name;
-  const std::string &type;
-  const uint32_t &level;
-  const std::string &description;
-  const std::string &edit_method;
-
-  GenericParamDescription(const roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr &p)
-    : param(p),
-      name(p->name),
-      type(p->type),
-      level(p->level),
-      description(p->description),
-      edit_method(p->edit_method)
+  AbstractParam(const std::string name, const std::string type, const uint32_t level, const std::string description, const std::string edit_method)
+    : name(name),
+      type(type),
+      level(level),
+      description(description),
+      edit_method(edit_method)
   {}
 
-  GenericParamDescription(const view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr &p)
-    : param(p),
-      name(p->name),
-      type(p->type),
-      level(p->level),
-      description(p->description),
-      edit_method(p->edit_method)
-  {}
+  virtual ~AbstractParam() {}
+
+  virtual boost::any getDefault() const = 0;
+  virtual boost::any getMin() const = 0;
+  virtual boost::any getMax() const = 0;
+  virtual boost::any getValue() const = 0;
+  virtual void setValue(const boost::any &val) = 0;
 };
 
-using GenericParamDescriptionConstPtr = boost::shared_ptr<const GenericParamDescription>;
+using AbstractParamPtr = boost::shared_ptr<AbstractParam>;
+
+template<typename C>
+class AbstractConfigParam : public AbstractParam
+{
+private:
+  boost::any def;
+  boost::any min;
+  boost::any max;
+
+public:
+  AbstractConfigParam(const typename C::AbstractParamDescriptionConstPtr &p)
+    : AbstractParam (p->name, p->type, p->level, p->description, p->edit_method)
+  {
+    p->getValue(C::__getDefault__(), def);
+    p->getValue(C::__getMin__(), min);
+    p->getValue(C::__getMax__(), max);
+  }
+
+  virtual ~AbstractConfigParam() {}
+
+  virtual boost::any getDefault() const override
+  {
+    return def;
+  }
+
+  virtual boost::any getMin() const override
+  {
+    return min;
+  }
+
+  virtual boost::any getMax() const override
+  {
+    return max;
+  }
+
+  virtual boost::any getValue() const = 0;
+  virtual void setValue(const boost::any &val) = 0;
+};
+
+template<typename C, typename T>
+class Param : public AbstractConfigParam<C>
+{
+private:
+  using ParamDescription = typename C::template ParamDescription<T>;
+  const ParamDescription *pd;
+  T &field;
+
+public:
+  Param(const typename C::AbstractParamDescriptionConstPtr &p, C &config)
+    : AbstractConfigParam<C>(p),
+      pd(reinterpret_cast<const ParamDescription*>(p.get())),
+      field(config.*(pd->field))
+  {}
+
+  virtual ~Param() {}
+
+  virtual boost::any getValue() const override
+  {
+    return field;
+  }
+
+  virtual void setValue(const boost::any &val) override
+  {
+    field = boost::any_cast<T>(val);
+  }
+};
+
+template<typename C>
+AbstractParamPtr initializeParam(const typename C::AbstractParamDescriptionConstPtr &p, C &config)
+{
+  if (p->type == "bool")
+  {
+    return boost::make_shared<Param<C, bool>>(p, config);
+  }
+  else if (p->type == "int")
+  {
+    return boost::make_shared<Param<C, int>>(p, config);
+  }
+  else if (p->type == "double")
+  {
+    return boost::make_shared<Param<C, double>>(p, config);
+  }
+  else if (p->type == "str")
+  {
+    return boost::make_shared<Param<C, std::string>>(p, config);
+  }
+  else
+  {
+    ROS_WARN_STREAM("Type " << p->type << " of parameter " << p->name << " not implemented");
+    return nullptr;
+  }
+}
 
 using RvpParamMap = boost::unordered_map<std::string, roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>;
 using VmpParamMap = boost::unordered_map<std::string, view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>;
@@ -128,18 +218,18 @@ private slots:
   void on_resetMapPushButton_clicked();
   void on_moveArmPushButton_clicked();
 
-  void on_boolComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
-  void on_intComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
-  void on_doubleComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
-  void on_strComboBox_activated(QComboBox *comboBox, const GenericParamDescriptionConstPtr &param, int index);
-  void on_checkBox_clicked(const GenericParamDescriptionConstPtr &param, bool checked);
-  void on_lineEdit_textEdited(const GenericParamDescriptionConstPtr &param, const QString &text);
-  void on_intSlider_sliderMoved(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
-  void on_intSlider_sliderReleased(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
-  void on_intSpinBox_editingFinished(QSpinBox *spinBox, QSlider *slider, const GenericParamDescriptionConstPtr &param);
-  void on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
-  void on_doubleSlider_sliderReleased(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
-  void on_doubleSpinBox_editingFinished(QDoubleSpinBox *spinBox, QSlider *slider, const GenericParamDescriptionConstPtr &param);
+  void on_boolComboBox_activated(QComboBox *comboBox, const AbstractParamPtr &param, int index);
+  void on_intComboBox_activated(QComboBox *comboBox, const AbstractParamPtr &param, int index);
+  void on_doubleComboBox_activated(QComboBox *comboBox, const AbstractParamPtr &param, int index);
+  void on_strComboBox_activated(QComboBox *comboBox, const AbstractParamPtr &param, int index);
+  void on_checkBox_clicked(const AbstractParamPtr &param, bool checked);
+  void on_lineEdit_textEdited(const AbstractParamPtr &param, const QString &text);
+  void on_intSlider_sliderMoved(QSpinBox *spinBox, const AbstractParamPtr &param, int position);
+  void on_intSlider_sliderReleased(QSpinBox *spinBox, const AbstractParamPtr &param);
+  void on_intSpinBox_editingFinished(QSpinBox *spinBox, QSlider *slider, const AbstractParamPtr &param);
+  void on_doubleSlider_sliderMoved(QDoubleSpinBox *spinBox, const AbstractParamPtr &param, int position);
+  void on_doubleSlider_sliderReleased(QDoubleSpinBox *spinBox, const AbstractParamPtr &param);
+  void on_doubleSpinBox_editingFinished(QDoubleSpinBox *spinBox, QSlider *slider, const AbstractParamPtr &param);
 
   // Internal slots
   void rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
@@ -192,19 +282,19 @@ private:
     QSlider *slider = nullptr;
   };
 
-  using ParamWidgetMap = boost::unordered_map<GenericParamDescriptionConstPtr, ParamWidget>;
+  using ParamWidgetMap = boost::unordered_map<AbstractParamPtr, ParamWidget>;
 
-  std::vector<GenericParamDescriptionConstPtr> rvp_params;
-  std::vector<GenericParamDescriptionConstPtr> vmp_params;
+  std::vector<AbstractParamPtr> rvp_params;
+  std::vector<AbstractParamPtr> vmp_params;
   ParamWidgetMap param_widgets;
 
   void initConfigGui();
 
-  void initEnumParam(const GenericParamDescriptionConstPtr &param, const boost::any &val, QFormLayout *configLayout);
-  void initBoolParam(const GenericParamDescriptionConstPtr &param, bool val, QFormLayout *configLayout);
-  void initIntParam(const GenericParamDescriptionConstPtr &param, int val, int min, int max, QFormLayout *configLayout);
-  void initDoubleParam(const GenericParamDescriptionConstPtr &param, double val, double min, double max, QFormLayout *configLayout);
-  void initStringParam(const GenericParamDescriptionConstPtr &param, const std::string &val, QFormLayout *configLayout);
+  void initEnumParam(const AbstractParamPtr &param, QFormLayout *configLayout);
+  void initBoolParam(const AbstractParamPtr &param, QFormLayout *configLayout);
+  void initIntParam(const AbstractParamPtr &param, QFormLayout *configLayout);
+  void initDoubleParam(const AbstractParamPtr &param, QFormLayout *configLayout);
+  void initStringParam(const AbstractParamPtr &param, QFormLayout *configLayout);
 
   void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc);
   void rvpConfigCallback(const roi_viewpoint_planner::PlannerConfig &conf);
@@ -212,104 +302,15 @@ private:
   bool confirmPlanExecutionCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   void plannerStateCallback(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
-  void intSlider_setValue(QSlider *slider, const GenericParamDescriptionConstPtr &param, int value);
-  void intSpinBox_setPosition(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
-  void intValue_sendConfig(QSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
+  void intSlider_setValue(QSlider *slider, const AbstractParamPtr &param, int value);
+  void intSpinBox_setPosition(QSpinBox *spinBox, const AbstractParamPtr &param, int position);
+  void intValue_sendConfig(QSpinBox *spinBox, const AbstractParamPtr &param);
 
-  void doubleSlider_setValue(QSlider *slider, const GenericParamDescriptionConstPtr &param, double value);
-  void doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param, int position);
-  void doubleValue_sendConfig(QDoubleSpinBox *spinBox, const GenericParamDescriptionConstPtr &param);
+  void doubleSlider_setValue(QSlider *slider, const AbstractParamPtr &param, double value);
+  void doubleSpinBox_setPosition(QDoubleSpinBox *spinBox, const AbstractParamPtr &param, int position);
+  void doubleValue_sendConfig(QDoubleSpinBox *spinBox, const AbstractParamPtr &param);
 
-  void sendConfig(const GenericParamDescriptionConstPtr &changed_param);
-
-  template <typename T>
-  T getValue(const GenericParamDescriptionConstPtr &param)
-  {
-    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(rvp_current_config, val);
-      return boost::any_cast<T>(val);
-    }
-    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(vmp_current_config, val);
-      return boost::any_cast<T>(val);
-    }
-    return T();
-  }
-
-  template <typename T>
-  T getMin(const GenericParamDescriptionConstPtr &param)
-  {
-    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(roi_viewpoint_planner::PlannerConfig::__getMin__(), val);
-      return boost::any_cast<T>(val);
-    }
-    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(view_motion_planner::VmpConfig::__getMin__(), val);
-      return boost::any_cast<T>(val);
-    }
-    return T();
-  }
-
-  template <typename T>
-  T getMax(const GenericParamDescriptionConstPtr &param)
-  {
-    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(roi_viewpoint_planner::PlannerConfig::__getMax__(), val);
-      return boost::any_cast<T>(val);
-    }
-    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(view_motion_planner::VmpConfig::__getMax__(), val);
-      return boost::any_cast<T>(val);
-    }
-    return T();
-  }
-
-  template <typename T>
-  T getDefault(const GenericParamDescriptionConstPtr &param)
-  {
-    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(roi_viewpoint_planner::PlannerConfig::__getDefault__(), val);
-      return boost::any_cast<T>(val);
-    }
-    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      boost::any val;
-      std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param)->getValue(view_motion_planner::VmpConfig::__getDefault__(), val);
-      return boost::any_cast<T>(val);
-    }
-    return T();
-  }
-
-  template <typename T>
-  void setValue(const GenericParamDescriptionConstPtr &param, T val)
-  {
-    if (std::holds_alternative<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      const roi_viewpoint_planner::PlannerConfig::ParamDescription<T> *pd = reinterpret_cast<const roi_viewpoint_planner::PlannerConfig::ParamDescription<T>*>(std::get<roi_viewpoint_planner::PlannerConfig::AbstractParamDescriptionConstPtr>(param->param).get());
-      rvp_current_config.*(pd->field) = val;
-      return;
-    }
-    if (std::holds_alternative<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param))
-    {
-      const view_motion_planner::VmpConfig::ParamDescription<T> *pd = reinterpret_cast<const view_motion_planner::VmpConfig::ParamDescription<T>*>(std::get<view_motion_planner::VmpConfig::AbstractParamDescriptionConstPtr>(param->param).get());
-      vmp_current_config.*(pd->field) = val;
-      return;
-    }
-  }
+  void sendConfig(const AbstractParamPtr &changed_param);
 };
 
 }
