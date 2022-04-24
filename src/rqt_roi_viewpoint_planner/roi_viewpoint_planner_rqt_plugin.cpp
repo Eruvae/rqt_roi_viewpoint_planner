@@ -12,26 +12,6 @@ Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
 namespace rqt_roi_viewpoint_planner
 {
 
-void AbstractReconfigureClient::changedConfig()
-{
-  for (const AbstractParamPtr &param : params)
-  {
-    param->updateGuiValue();
-  }
-}
-
-template<>
-QVariant toQVariant(const std::string &val)
-{
-  return QVariant(QString::fromStdString(val));
-}
-
-template<>
-std::string fromQVariant(const QVariant &val)
-{
-  return val.toString().toStdString();
-}
-
 RoiViewpointPlannerRqtPlugin::RoiViewpointPlannerRqtPlugin() :
   rqt_gui_cpp::Plugin(),
   widget(nullptr)

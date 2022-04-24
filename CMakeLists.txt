@@ -129,6 +129,7 @@ set (rvp_rqt_SRCS
 
 set(rvp_rqt_HDRS
   include/rqt_roi_viewpoint_planner/roi_viewpoint_planner_rqt_plugin.h
+  include/rqt_roi_viewpoint_planner/reconfigure_client_gui.h
   include/rqt_roi_viewpoint_planner/ledindicator.h
 )
 
