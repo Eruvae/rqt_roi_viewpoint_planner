@@ -68,7 +68,8 @@ class AbstractReconfigureClient : public QObject
   Q_OBJECT
 protected:
   std::vector<AbstractParamPtr> params;
-  virtual void changedConfig()
+
+  void changedConfig()
   {
     for (const AbstractParamPtr &param : params)
     {
@@ -88,11 +89,10 @@ public:
 template<typename C>
 class AbstractConfigParam : public AbstractParam
 {
-protected:
+private:
   boost::any def;
   boost::any min;
   boost::any max;
-
 
 public:
   AbstractConfigParam(const typename C::AbstractParamDescriptionConstPtr &p, AbstractReconfigureClient *client)
@@ -126,14 +126,12 @@ class Param : public AbstractConfigParam<C>
 {
 private:
   using ParamDescription = typename C::template ParamDescription<T>;
-  const ParamDescription *pd;
   T &field;
 
 public:
   Param(const typename C::AbstractParamDescriptionConstPtr &p, AbstractReconfigureClient *client, C &config)
     : AbstractConfigParam<C>(p, client),
-      pd(reinterpret_cast<const ParamDescription*>(p.get())),
-      field(config.*(pd->field))
+      field(config.*(reinterpret_cast<const ParamDescription*>(p.get())->field))
   {}
 
   virtual ~Param() {}
@@ -177,9 +175,8 @@ template<typename C, typename T>
 class EnumParam : public Param<C, T>
 {
 private:
-  QComboBox *comboBox = nullptr;
+  QComboBox *comboBox;
 
-protected:
   void on_comboBox_activated(int index)
   {
     QVariant val = comboBox->itemData(index);
@@ -224,9 +221,8 @@ template<typename C>
 class BoolParam : public Param<C, bool>
 {
 private:
-  QCheckBox *checkBox = nullptr;
+  QCheckBox *checkBox;
 
-protected:
   void on_checkBox_clicked(bool checked)
   {
     this->setValue(checked);
@@ -234,7 +230,6 @@ protected:
   }
 
 public:
-
   BoolParam(const typename C::AbstractParamDescriptionConstPtr &p, AbstractReconfigureClient *client, C &config, QFormLayout *configLayout)
     : Param<C, bool>(p, client, config), checkBox(new QCheckBox())
   {
@@ -254,8 +249,8 @@ template<typename C>
 class IntParam : public Param<C, int>
 {
 private:
-  QSpinBox *spinBox = nullptr;
-  QSlider *slider = nullptr;
+  QSpinBox *spinBox;
+  QSlider *slider;
 
   void intSlider_setValue(int value)
   {
@@ -278,7 +273,6 @@ private:
     this->client->sendConfig(this);
   }
 
-protected:
   void on_slider_sliderMoved(int position)
   {
     intSpinBox_setPosition(position);
@@ -332,8 +326,8 @@ template <typename C>
 class DoubleParam : public Param<C, double>
 {
 private:
-  QDoubleSpinBox *spinBox = nullptr;
-  QSlider *slider = nullptr;
+  QDoubleSpinBox *spinBox;
+  QSlider *slider;
 
   void doubleSlider_setValue(double value)
   {
@@ -356,7 +350,6 @@ private:
     this->client->sendConfig(this);
   }
 
-protected:
   void on_slider_sliderMoved(int position)
   {
     doubleSpinBox_setPosition(position);
@@ -411,9 +404,8 @@ template <typename C>
 class StringParam : public Param<C, std::string>
 {
 private:
-  QLineEdit *lineEdit = nullptr;
+  QLineEdit *lineEdit;
 
-protected:
   void on_lineEdit_textEdited(const QString &text)
   {
     this->setValue(text.toStdString());
@@ -481,36 +473,51 @@ class ReconfigureClient : public AbstractReconfigureClient
 private:
   C current_config;
   dynamic_reconfigure::Client<C> *config_client;
-  QLineEdit *statusTextBox;
+  QTabWidget *tab_widget;
+  int tab_index;
+  QLineEdit *status_textbox;
 
   void configCallback(const C &conf)
   {
     ROS_INFO_STREAM("Config callback called");
     current_config = conf;
+    tab_widget->setTabEnabled(tab_index, true);
+    tab_widget->setCurrentIndex(tab_index);
     emit configChanged();
   }
 
 public:
-  ReconfigureClient(const std::string& name, QFormLayout *configLayout, QLineEdit *statusTextBox)
-    : config_client(new dynamic_reconfigure::Client<C>(name, boost::bind(&ReconfigureClient::configCallback, this, _1))),
-      statusTextBox(statusTextBox)
+  ReconfigureClient(const std::string& name, QTabWidget *tab_widget, QLineEdit *statusTextBox)
+    : tab_widget(tab_widget), status_textbox(statusTextBox)
   {
-    QObject::connect(this, &ReconfigureClient::configChanged, this, &ReconfigureClient::changedConfig);
+    QWidget *config_widget(new QWidget());
+    QFormLayout *config_layout = new QFormLayout();
+    config_widget->setLayout(config_layout);
 
     for (const typename C::AbstractParamDescriptionConstPtr &param : C::__getParamDescriptions__())
     {
-      params.push_back(initializeParam(param, this, current_config, configLayout));
+      params.push_back(initializeParam(param, this, current_config, config_layout));
     }
+
+    tab_index = tab_widget->addTab(config_widget, QString::fromStdString(name));
+    tab_widget->setTabEnabled(tab_index, false);
+
+    config_client = new dynamic_reconfigure::Client<C>(name, boost::bind(&ReconfigureClient::configCallback, this, _1));
+    QObject::connect(this, &ReconfigureClient::configChanged, this, &ReconfigureClient::changedConfig);
   }
 
   virtual void sendConfig(const AbstractParam *changed_param)
   {
     if (!config_client->setConfiguration(current_config))
-      statusTextBox->setText(QString::fromStdString(changed_param->name) + " change failed");
+    {
+      status_textbox->setText(QString::fromStdString(changed_param->name) + " change failed");
+      tab_widget->setTabEnabled(tab_index, false);
+    }
     else
-      statusTextBox->setText(QString::fromStdString(changed_param->name) + " change successful");
+    {
+      status_textbox->setText(QString::fromStdString(changed_param->name) + " change successful");
+    }
   }
-
 };
 
 } // namespace rqt_roi_viewpoint_planner

@@ -57,9 +57,8 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   confirmPlanExecutionServer = getNodeHandle().advertiseService("/roi_viewpoint_planner/request_execution_confirmation", &RoiViewpointPlannerRqtPlugin::confirmPlanExecutionCallback, this);
 
-  rvpConfigClient = new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("/roi_viewpoint_planner", ui.configRvpLayout, ui.statusTextBox);
-
-  vmpConfigClient = new ReconfigureClient<view_motion_planner::VmpConfig>("/view_motion_planner", ui.configVmpLayout, ui.statusTextBox);
+  rvpConfigClient = new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("/roi_viewpoint_planner", ui.configTabWidget, ui.statusTextBox);
+  vmpConfigClient = new ReconfigureClient<view_motion_planner::VmpConfig>("/view_motion_planner", ui.configTabWidget, ui.statusTextBox);
 
   //ROS_INFO_STREAM("Init is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
 }
