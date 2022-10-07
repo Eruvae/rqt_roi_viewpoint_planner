@@ -16,6 +16,7 @@
 #include <QSlider>
 #include <QLineEdit>
 #include <QFormLayout>
+#include <QScrollArea>
 
 #include <dynamic_reconfigure/client.h>
 #include <boost/any.hpp>
@@ -490,16 +491,19 @@ public:
   ReconfigureClient(const std::string& name, QTabWidget *tab_widget, QLineEdit *statusTextBox)
     : tab_widget(tab_widget), status_textbox(statusTextBox)
   {
-    QWidget *config_widget(new QWidget());
-    QFormLayout *config_layout = new QFormLayout();
-    config_widget->setLayout(config_layout);
+    QWidget *config_widget = new QWidget;
+    QFormLayout *config_layout = new QFormLayout(config_widget);
 
     for (const typename C::AbstractParamDescriptionConstPtr &param : C::__getParamDescriptions__())
     {
       params.push_back(initializeParam(param, this, current_config, config_layout));
     }
 
-    tab_index = tab_widget->addTab(config_widget, QString::fromStdString(name));
+    QScrollArea * config_scroll_area = new QScrollArea;
+    config_scroll_area->setWidgetResizable(true);
+    config_scroll_area->setWidget(config_widget);
+
+    tab_index = tab_widget->addTab(config_scroll_area, QString::fromStdString(name));
     tab_widget->setTabEnabled(tab_index, false);
 
     config_client = new dynamic_reconfigure::Client<C>(name, boost::bind(&ReconfigureClient::configCallback, this, _1));
