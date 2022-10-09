@@ -6,71 +6,70 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>414</width>
-    <height>804</height>
+    <width>426</width>
+    <height>855</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="mainGridLayout">
-   <item row="8" column="0" colspan="3">
-    <widget class="QLineEdit" name="statusTextBox"/>
-   </item>
-   <item row="6" column="2">
-    <widget class="QPushButton" name="loadMapPushButton">
-     <property name="text">
-      <string>Load map</string>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" rowspan="9">
+    <widget class="QTabWidget" name="configTabWidget">
+     <property name="currentIndex">
+      <number>-1</number>
+     </property>
+     <property name="tabBarAutoHide">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="4" column="2">
-    <layout class="QHBoxLayout" name="moveArmLayout">
-     <item>
-      <widget class="QComboBox" name="moveArmComboBox">
-       <item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="plannerStateGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Planner State</string>
+     </property>
+     <layout class="QFormLayout" name="plannerStateGroupBoxLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="planningLabel">
         <property name="text">
-         <string>Home</string>
+         <string>Planning</string>
         </property>
-       </item>
-       <item>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="LedIndicator" name="planningLed" native="true"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="movingLabel">
         <property name="text">
-         <string>Transport</string>
+         <string>Moving</string>
         </property>
-       </item>
-       <item>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="LedIndicator" name="movingLed" native="true"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="scanLabel">
         <property name="text">
-         <string>Up</string>
+         <string>Scan inserted</string>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Left</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Zero</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="moveArmPushButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Go</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="LedIndicator" name="scanLed" native="true"/>
+      </item>
+     </layout>
+    </widget>
    </item>
-   <item row="1" column="2">
+   <item row="1" column="1">
     <widget class="QGroupBox" name="evaluatorGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -115,7 +114,7 @@
       <item row="1" column="1">
        <widget class="QComboBox" name="evalEndParamComboBox">
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <item>
          <property name="text">
@@ -147,7 +146,7 @@
          <double>600.000000000000000</double>
         </property>
         <property name="value">
-         <double>120.000000000000000</double>
+         <double>300.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -180,7 +179,7 @@
          <string/>
         </property>
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -194,7 +193,7 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="2">
+   <item row="2" column="1">
     <widget class="QGroupBox" name="randomizePlantsGroupBox">
      <property name="title">
       <string>Randomize plant positions</string>
@@ -366,15 +365,8 @@
      </layout>
     </widget>
    </item>
-   <item row="7" column="2">
-    <widget class="QPushButton" name="saveMapPushButton">
-     <property name="text">
-      <string>Save map</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QGroupBox" name="plannerStateGroupBox">
+   <item row="3" column="1">
+    <widget class="QGroupBox" name="saveRobotPoseGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -382,60 +374,34 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Planner State</string>
+      <string>Save Robot Pose</string>
      </property>
-     <layout class="QFormLayout" name="plannerStateGroupBoxLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="planningLabel">
-        <property name="text">
-         <string>Planning</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="LedIndicator" name="planningLed" native="true"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="movingLabel">
-        <property name="text">
-         <string>Moving</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="LedIndicator" name="movingLed" native="true"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="scanLabel">
-        <property name="text">
-         <string>Scan inserted</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="LedIndicator" name="scanLed" native="true"/>
-      </item>
-     </layout>
+     <widget class="QLineEdit" name="poseNameLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>12</x>
+        <y>30</y>
+        <width>142</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="saveRobotPosePushButton">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>30</y>
+        <width>89</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
     </widget>
    </item>
-   <item row="5" column="2">
-    <widget class="QPushButton" name="resetMapPushButton">
-     <property name="text">
-      <string>Reset map</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1" rowspan="8">
-    <widget class="QTabWidget" name="configTabWidget">
-     <property name="currentIndex">
-      <number>-1</number>
-     </property>
-     <property name="tabBarAutoHide">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
+   <item row="4" column="1">
     <widget class="QGroupBox" name="planRequestGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -479,6 +445,76 @@
       </item>
      </layout>
     </widget>
+   </item>
+   <item row="5" column="1">
+    <layout class="QHBoxLayout" name="moveArmLayout">
+     <item>
+      <widget class="QComboBox" name="moveArmComboBox">
+       <item>
+        <property name="text">
+         <string>Home</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Transport</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Up</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Zero</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="moveArmPushButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Go</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="1">
+    <widget class="QPushButton" name="resetMapPushButton">
+     <property name="text">
+      <string>Reset map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QPushButton" name="loadMapPushButton">
+     <property name="text">
+      <string>Load map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QPushButton" name="saveMapPushButton">
+     <property name="text">
+      <string>Save map</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLineEdit" name="statusTextBox"/>
    </item>
   </layout>
  </widget>

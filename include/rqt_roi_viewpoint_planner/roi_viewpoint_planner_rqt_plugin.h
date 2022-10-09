@@ -21,6 +21,8 @@
 #include <roi_viewpoint_planner_msgs/RandomizePlantPositions.h>
 #include <roi_viewpoint_planner_msgs/StartEvaluator.h>
 #include <roi_viewpoint_planner_msgs/VmpConfig.h>
+#include <roi_viewpoint_planner_msgs/SaveCurrentRobotState.h>
+
 #include <std_srvs/Trigger.h>
 #include <std_srvs/Empty.h>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
@@ -92,6 +94,8 @@ private slots:
   void on_loadMapPushButton_clicked();
   void on_resetMapPushButton_clicked();
   void on_moveArmPushButton_clicked();
+  void on_saveRobotPosePushButton_clicked();
+
 
   // Internal slots
   void rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
@@ -130,6 +134,8 @@ private:
   ros::ServiceClient resetOctomapClient;
   ros::ServiceClient randomizePlantPositionsClient;
   ros::ServiceClient startEvaluatorClient;
+  ros::ServiceClient saveCurrentRobotStateClient;
+
 
   ros::Subscriber plannerStateSub;
 

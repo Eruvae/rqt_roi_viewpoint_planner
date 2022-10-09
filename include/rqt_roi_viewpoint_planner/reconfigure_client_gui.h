@@ -16,6 +16,7 @@
 #include <QSlider>
 #include <QLineEdit>
 #include <QFormLayout>
+#include<QScrollBar>
 
 #include <dynamic_reconfigure/client.h>
 #include <boost/any.hpp>
@@ -490,7 +491,7 @@ public:
   ReconfigureClient(const std::string& name, QTabWidget *tab_widget, QLineEdit *statusTextBox)
     : tab_widget(tab_widget), status_textbox(statusTextBox)
   {
-    QWidget *config_widget(new QWidget());
+    QWidget *config_widget(new QScrollBar());
     QFormLayout *config_layout = new QFormLayout();
     config_widget->setLayout(config_layout);
 
