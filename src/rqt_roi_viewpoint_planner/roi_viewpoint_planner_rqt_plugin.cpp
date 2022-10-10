@@ -42,6 +42,8 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.moveArmPushButton, SIGNAL(clicked()), this, SLOT(on_moveArmPushButton_clicked()));
   connect(ui.randomizePlantsPushButton, SIGNAL(clicked()), this, SLOT(on_randomizePlantsPushButton_clicked()));
   connect(ui.startEvaluatorPushButton, SIGNAL(clicked()), this, SLOT(on_startEvaluatorPushButton_clicked()));
+  connect(ui.saveRobotPosePushButton, SIGNAL(clicked()), this, SLOT(on_saveRobotPosePushButton_clicked()));
+
 
   moveToStateThread.reset(new MoveToStateThread(getNodeHandle()));
   connect(moveToStateThread.get(), SIGNAL(success(QString)), ui.statusTextBox, SLOT(setText(QString)));
@@ -52,6 +54,7 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   resetOctomapClient = getNodeHandle().serviceClient<std_srvs::Empty>("/roi_viewpoint_planner/reset_octomap");
   randomizePlantPositionsClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::RandomizePlantPositions>("/roi_viewpoint_planner/randomize_plant_positions");
   startEvaluatorClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::StartEvaluator>("/roi_viewpoint_planner/start_evaluator");
+  saveCurrentRobotStateClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveCurrentRobotState>("/roi_viewpoint_planner/save_robot_state");
 
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
 
@@ -273,6 +276,32 @@ void RoiViewpointPlannerRqtPlugin::on_startEvaluatorPushButton_clicked()
   {
     ui.statusTextBox->setText("Failed to call start evaluator service");
   }
+}
+
+void RoiViewpointPlannerRqtPlugin:: on_saveRobotPosePushButton_clicked()
+{
+  std::string pose_name = ui.poseNameLineEdit->text().toStdString();
+  if(pose_name.empty())
+  {
+    ROS_WARN("Pose name empty");
+    ui.statusTextBox->setText("Pose Name Invalid");
+    return;
+  }
+  roi_viewpoint_planner_msgs::SaveCurrentRobotState srv;
+  srv.request.pose_name = pose_name;
+
+  if(saveCurrentRobotStateClient.call(srv))
+  {
+    if (srv.response.success)
+      ui.statusTextBox->setText("Current Robot Pose Saved Successfully");
+    else
+      ui.statusTextBox->setText("Failed to save current robot pose");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call save current robot state service");
+  }
+
 }
 
 constexpr std::array<std::array<double, 6>, 5> RoiViewpointPlannerRqtPlugin::MOVE_CONFIGS;
