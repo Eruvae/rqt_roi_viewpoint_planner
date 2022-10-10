@@ -10,7 +10,7 @@ set (CATKIN_DEPENDENCIES
     roi_viewpoint_planner_msgs
     std_srvs
     dynamic_reconfigure
-    moveit_setup_assistant
+    #moveit_setup_assistant
 )
 
 ## Find catkin macros and libraries
