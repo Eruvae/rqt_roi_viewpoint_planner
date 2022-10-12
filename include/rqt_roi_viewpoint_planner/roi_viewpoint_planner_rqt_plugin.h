@@ -136,6 +136,7 @@ private:
   ros::ServiceClient startEvaluatorClient;
   ros::ServiceClient saveCurrentRobotStateClient;
 
+  void setQuaternion(geometry_msgs::Quaternion &q, double roll, double pitch, double yaw);
 
   ros::Subscriber plannerStateSub;
 

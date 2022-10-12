@@ -167,6 +167,23 @@ void RoiViewpointPlannerRqtPlugin::on_saveMapPushButton_clicked()
   }
 }
 
+void RoiViewpointPlannerRqtPlugin::setQuaternion(geometry_msgs::Quaternion &q, double roll, double pitch, double yaw)
+{
+  double halfYaw = yaw * 0.5 * M_PI / 180.0;
+  double halfPitch = pitch * 0.5 * M_PI / 180.0;
+  double halfRoll = roll * 0.5 * M_PI / 180.0;
+  double cosYaw = std::cos(halfYaw);
+  double sinYaw = std::sin(halfYaw);
+  double cosPitch = std::cos(halfPitch);
+  double sinPitch = std::sin(halfPitch);
+  double cosRoll = std::cos(halfRoll);
+  double sinRoll = std::sin(halfRoll);
+  q.x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;
+  q.y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
+  q.z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
+  q.w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw;
+}
+
 void RoiViewpointPlannerRqtPlugin::on_loadMapPushButton_clicked()
 {
   QString file_path = QFileDialog::getOpenFileName(widget, QString(), QString(), "Octree (*.ot *.bt)");
@@ -175,6 +192,11 @@ void RoiViewpointPlannerRqtPlugin::on_loadMapPushButton_clicked()
 
   roi_viewpoint_planner_msgs::LoadOctomap srv;
   srv.request.filename = file_path.toStdString();
+  srv.request.offset.translation.x = ui.mapLoadOffsetXSpinBox->value();
+  srv.request.offset.translation.y = ui.mapLoadOffsetYSpinBox->value();
+  srv.request.offset.translation.z = ui.mapLoadOffsetZSpinBox->value();
+  setQuaternion(srv.request.offset.rotation, ui.mapLoadOffsetRollSpinBox->value(), ui.mapLoadOffsetPitchSpinBox->value(), ui.mapLoadOffsetYawSpinBox->value());
+
   if (loadOctomapClient.call(srv))
   {
     if (srv.response.success)
