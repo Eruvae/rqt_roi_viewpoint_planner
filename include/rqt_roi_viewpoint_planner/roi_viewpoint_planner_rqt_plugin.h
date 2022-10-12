@@ -96,6 +96,10 @@ private slots:
   void on_moveArmPushButton_clicked();
   void on_saveRobotPosePushButton_clicked();
 
+  void on_loadConfigPushButton_clicked();
+  void on_saveConfigPushButton_clicked();
+
+
 
   // Internal slots
   void rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig &received_config);

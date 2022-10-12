@@ -7,6 +7,10 @@
 #include <QtGlobal>
 #include <QFileDialog>
 
+#include <stdio.h>
+#include <stdlib.h>
+
+
 Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
 
 namespace rqt_roi_viewpoint_planner
@@ -43,6 +47,10 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   connect(ui.randomizePlantsPushButton, SIGNAL(clicked()), this, SLOT(on_randomizePlantsPushButton_clicked()));
   connect(ui.startEvaluatorPushButton, SIGNAL(clicked()), this, SLOT(on_startEvaluatorPushButton_clicked()));
   connect(ui.saveRobotPosePushButton, SIGNAL(clicked()), this, SLOT(on_saveRobotPosePushButton_clicked()));
+
+  connect(ui.loadConfigPushButton, SIGNAL(clicked()), this, SLOT(on_loadConfigPushButton_clicked()));
+  connect(ui.saveConfigPushButton, SIGNAL(clicked()), this, SLOT(on_saveConfigPushButton_clicked()));
+
 
 
   moveToStateThread.reset(new MoveToStateThread(getNodeHandle()));
@@ -325,6 +333,59 @@ void RoiViewpointPlannerRqtPlugin:: on_saveRobotPosePushButton_clicked()
   }
 
 }
+
+void RoiViewpointPlannerRqtPlugin::on_loadConfigPushButton_clicked()
+{
+  QString file_path = QFileDialog::getOpenFileName(widget, QString(), QString(), "YAML (*.yaml *.yml)");
+  if (file_path.isEmpty())
+  {
+    ui.statusTextBox->setText("YAML File name empty");
+    return;      
+  }
+  std::string load_command = "rosrun dynamic_reconfigure dynparam load /view_motion_planner ";
+  std::string yaml_filepath = file_path.toStdString();
+  try
+  {
+    system((load_command + yaml_filepath).c_str());
+    ui.statusTextBox->setText("YAML File loaded successfully");
+
+  }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+    ui.statusTextBox->setText("Failed to load Config from YAML File");
+  }
+}
+
+void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
+{
+  QString file_path = QFileDialog::getSaveFileName(widget, tr("Save YAML File"),
+				"untitled.yaml", tr("YAML (*.yaml)"));
+
+  if (file_path.isEmpty())
+  {
+    ui.statusTextBox->setText("YAML File name empty");
+    return;      
+  }
+
+  std::string yaml_filepath = file_path.toStdString();
+
+  std::string dump_command = "rosrun dynamic_reconfigure dynparam dump /view_motion_planner ";
+
+  try
+  {
+    system((dump_command + yaml_filepath).c_str());
+    ui.statusTextBox->setText("YAML File saved successfully");
+
+  }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+    ui.statusTextBox->setText("Failed to save YAML File");
+  }
+    
+}
+
 
 constexpr std::array<std::array<double, 6>, 5> RoiViewpointPlannerRqtPlugin::MOVE_CONFIGS;
 
