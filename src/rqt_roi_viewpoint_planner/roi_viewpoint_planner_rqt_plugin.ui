@@ -6,16 +6,312 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>426</width>
-    <height>932</height>
+    <width>393</width>
+    <height>905</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="2">
-    <widget class="QGroupBox" name="plannerStateGroupBox">
+   <item row="1" column="1" colspan="2">
+    <widget class="QGroupBox" name="evaluatorGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Evaluator</string>
+     </property>
+     <layout class="QFormLayout" name="evaluatorGroupBoxLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="evalTrialsLabel">
+        <property name="text">
+         <string>Trials</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="evalTrialsSpinBox">
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="evalEndParamLabel">
+        <property name="text">
+         <string>E-Param</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="evalEndParamComboBox">
+        <property name="currentIndex">
+         <number>2</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>Time</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Plan duration</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Plan length</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="evalDurationLabel">
+        <property name="text">
+         <string>Duration</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="evalDurationSpinBox">
+        <property name="maximum">
+         <double>600.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>300.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QPushButton" name="startEvaluatorPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Start evaluator</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="startingIndexSpinBox"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="startingIndexLabel">
+        <property name="text">
+         <string>S-Index</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="evalRandomizeCheckBox">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="evalRandomizeLabel">
+        <property name="text">
+         <string>Random</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QGroupBox" name="randomizePlantsGroupBox">
+     <property name="title">
+      <string>Randomize plant positions</string>
+     </property>
+     <layout class="QFormLayout" name="randomizePlantGroupBoxLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="randMinLabel">
+        <property name="text">
+         <string>Min</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="randMinLayout">
+        <item>
+         <widget class="QDoubleSpinBox" name="randMinXSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>-1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMinYSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>-1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMinZSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>-0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="randMaxLabel">
+        <property name="text">
+         <string>Max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="randMaxLayout">
+        <item>
+         <widget class="QDoubleSpinBox" name="randMaxXSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMaxYSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="randMaxZSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-9.900000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9.900000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="randMinDistLabel">
+        <property name="text">
+         <string>Min Dist</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="randMinDistSpinBox">
+        <property name="maximum">
+         <double>9.990000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.400000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="randomizePlantsPushButton">
+        <property name="text">
+         <string>Randomize</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QGroupBox" name="saveRobotPoseGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -23,43 +319,23 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Planner State</string>
+      <string>Save Robot Pose</string>
      </property>
-     <layout class="QFormLayout" name="plannerStateGroupBoxLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="planningLabel">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLineEdit" name="poseNameLineEdit"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="saveRobotPosePushButton">
         <property name="text">
-         <string>Planning</string>
+         <string>Save</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="LedIndicator" name="planningLed" native="true"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="movingLabel">
-        <property name="text">
-         <string>Moving</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="LedIndicator" name="movingLed" native="true"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="scanLabel">
-        <property name="text">
-         <string>Scan inserted</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="LedIndicator" name="scanLed" native="true"/>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="6" column="2">
+   <item row="6" column="1" colspan="2">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Octomap services</string>
@@ -234,8 +510,25 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="2">
-    <widget class="QGroupBox" name="saveRobotPoseGroupBox">
+   <item row="7" column="0">
+    <widget class="QLineEdit" name="statusTextBox"/>
+   </item>
+   <item row="7" column="1">
+    <widget class="QPushButton" name="loadConfigPushButton">
+     <property name="text">
+      <string>Load Config</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="QPushButton" name="saveConfigPushButton">
+     <property name="text">
+      <string>Save Config</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QGroupBox" name="plannerStateGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -243,319 +536,88 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Save Robot Pose</string>
+      <string>Planner State</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLineEdit" name="poseNameLineEdit"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="saveRobotPosePushButton">
-        <property name="text">
-         <string>Save</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="2" column="2">
-    <widget class="QGroupBox" name="randomizePlantsGroupBox">
-     <property name="title">
-      <string>Randomize plant positions</string>
-     </property>
-     <layout class="QFormLayout" name="randomizePlantGroupBoxLayout">
+     <layout class="QFormLayout" name="plannerStateGroupBoxLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="randMinLabel">
+       <widget class="QLabel" name="planningLabel">
         <property name="text">
-         <string>Min</string>
+         <string>Planning</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <layout class="QHBoxLayout" name="randMinLayout">
-        <item>
-         <widget class="QDoubleSpinBox" name="randMinXSpinBox">
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-9.900000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>9.900000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>-1.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="randMinYSpinBox">
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-9.900000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>9.900000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>-1.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="randMinZSpinBox">
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-9.900000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>9.900000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>-0.100000000000000</double>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="LedIndicator" name="planningLed" native="true"/>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="randMaxLabel">
+       <widget class="QLabel" name="movingLabel">
         <property name="text">
-         <string>Max</string>
+         <string>Moving</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <layout class="QHBoxLayout" name="randMaxLayout">
-        <item>
-         <widget class="QDoubleSpinBox" name="randMaxXSpinBox">
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-9.900000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>9.900000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="randMaxYSpinBox">
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-9.900000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>9.900000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="randMaxZSpinBox">
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-9.900000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>9.900000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>0.100000000000000</double>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="LedIndicator" name="movingLed" native="true"/>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="randMinDistLabel">
+       <widget class="QLabel" name="scanLabel">
         <property name="text">
-         <string>Min Dist</string>
+         <string>Scan inserted</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="randMinDistSpinBox">
-        <property name="maximum">
-         <double>9.990000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-        <property name="value">
-         <double>0.400000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QPushButton" name="randomizePlantsPushButton">
-        <property name="text">
-         <string>Randomize</string>
-        </property>
-       </widget>
+       <widget class="LedIndicator" name="scanLed" native="true"/>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QGroupBox" name="evaluatorGroupBox">
+   <item row="4" column="1" colspan="2">
+    <widget class="QGroupBox" name="planRequestGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="minimumSize">
-      <size>
-       <width>200</width>
-       <height>0</height>
-      </size>
-     </property>
      <property name="title">
-      <string>Evaluator</string>
+      <string>Plan request</string>
      </property>
-     <layout class="QFormLayout" name="evaluatorGroupBoxLayout">
+     <layout class="QGridLayout" name="planRequestGroupBoxLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="evalTrialsLabel">
+       <widget class="QLabel" name="planRequestLabel">
         <property name="text">
-         <string>Trials</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="evalTrialsSpinBox">
-        <property name="maximum">
-         <number>50</number>
-        </property>
-        <property name="value">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="evalEndParamLabel">
-        <property name="text">
-         <string>E-Param</string>
+         <string>Received</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="evalEndParamComboBox">
-        <property name="currentIndex">
-         <number>2</number>
-        </property>
-        <item>
-         <property name="text">
-          <string>Time</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Plan duration</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Plan length</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="evalDurationLabel">
-        <property name="text">
-         <string>Duration</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="evalDurationSpinBox">
-        <property name="maximum">
-         <double>600.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>300.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QPushButton" name="startEvaluatorPushButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Start evaluator</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QSpinBox" name="startingIndexSpinBox"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="startingIndexLabel">
-        <property name="text">
-         <string>S-Index</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QCheckBox" name="evalRandomizeCheckBox">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="checked">
+       <widget class="QPushButton" name="planDeclinePushButton">
+        <property name="enabled">
          <bool>false</bool>
         </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="evalRandomizeLabel">
         <property name="text">
-         <string>Random</string>
+         <string>Decline</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="planAcceptPushButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Accept</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="LedIndicator" name="planRequestLed" native="true"/>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="5" column="2">
+   <item row="5" column="1" colspan="2">
     <layout class="QHBoxLayout" name="moveArmLayout">
      <item>
       <widget class="QComboBox" name="moveArmComboBox">
@@ -601,7 +663,7 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="0" rowspan="11">
+   <item row="0" column="0" rowspan="7">
     <widget class="QTabWidget" name="configTabWidget">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -614,68 +676,6 @@
      </property>
      <property name="tabBarAutoHide">
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="2">
-    <widget class="QGroupBox" name="planRequestGroupBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="title">
-      <string>Plan request</string>
-     </property>
-     <layout class="QGridLayout" name="planRequestGroupBoxLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="planRequestLabel">
-        <property name="text">
-         <string>Received</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="planDeclinePushButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Decline</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="planAcceptPushButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Accept</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="LedIndicator" name="planRequestLed" native="true"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="11" column="2">
-    <widget class="QPushButton" name="loadConfigPushButton">
-     <property name="text">
-      <string>Load Config</string>
-     </property>
-    </widget>
-   </item>
-   <item row="11" column="0">
-    <widget class="QLineEdit" name="statusTextBox"/>
-   </item>
-   <item row="12" column="2">
-    <widget class="QPushButton" name="saveConfigPushButton">
-     <property name="text">
-      <string>Save Config</string>
      </property>
     </widget>
    </item>
