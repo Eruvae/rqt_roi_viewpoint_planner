@@ -68,8 +68,8 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   confirmPlanExecutionServer = getNodeHandle().advertiseService("/roi_viewpoint_planner/request_execution_confirmation", &RoiViewpointPlannerRqtPlugin::confirmPlanExecutionCallback, this);
 
-  rvpConfigClient = new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("/roi_viewpoint_planner", ui.configTabWidget, ui.statusTextBox);
-  vmpConfigClient = new ReconfigureClient<view_motion_planner::VmpConfig>("/view_motion_planner", ui.configTabWidget, ui.statusTextBox);
+  rvpConfigClient = new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("roi_viewpoint_planner", ui.configTabWidget, ui.statusTextBox);
+  vmpConfigClient = new ReconfigureClient<view_motion_planner::VmpConfig>("view_motion_planner", ui.configTabWidget, ui.statusTextBox);
 
   //ROS_INFO_STREAM("Init is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
 }
@@ -344,30 +344,19 @@ void RoiViewpointPlannerRqtPlugin::on_loadConfigPushButton_clicked()
   }
 
   int curtab = ui.configTabWidget->currentIndex();
-  bool success;
   if (curtab == 0) // roi_viewpoint_planner
   {
-    success = rvpConfigClient->loadConfig(file_path);
+    rvpConfigClient->loadConfig(file_path);
   }
   else if (curtab == 1) // view_motion_planner
   {
-    success = vmpConfigClient->loadConfig(file_path);
+    vmpConfigClient->loadConfig(file_path);
   }
   else
   {
     ui.statusTextBox->setText("Active config tab not supported.");
     return;
   }
-
-  if (success)
-  {
-    ui.statusTextBox->setText("YAML File loaded successfully");
-  }
-  else
-  {
-    ui.statusTextBox->setText("YAML File could not be loaded");
-  }
-
 }
 
 void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
@@ -382,30 +371,19 @@ void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
   }
 
   int curtab = ui.configTabWidget->currentIndex();
-  bool success;
   if (curtab == 0) // roi_viewpoint_planner
   {
-    success = rvpConfigClient->saveConfig(file_path);
+    rvpConfigClient->saveConfig(file_path);
   }
   else if (curtab == 1) // view_motion_planner
   {
-    success = vmpConfigClient->saveConfig(file_path);
+    vmpConfigClient->saveConfig(file_path);
   }
   else
   {
     ui.statusTextBox->setText("Active config tab not supported.");
     return;
   }
-
-  if (success)
-  {
-    ui.statusTextBox->setText("YAML File saved successfully");
-  }
-  else
-  {
-    ui.statusTextBox->setText("YAML File could not be saved");
-  }
-
 }
 
 

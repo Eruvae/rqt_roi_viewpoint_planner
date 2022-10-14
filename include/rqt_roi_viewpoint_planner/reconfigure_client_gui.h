@@ -3,7 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <memory>
+#include <fstream>
 
 #include <QObject>
 #include <QVariant>
@@ -17,9 +19,6 @@
 #include <QLineEdit>
 #include <QFormLayout>
 #include <QScrollArea>
-#include <QFile>
-#include <QTextStream>
-#include <QHash>
 
 #include <dynamic_reconfigure/client.h>
 #include <boost/any.hpp>
@@ -72,7 +71,7 @@ class AbstractReconfigureClient : public QObject
   Q_OBJECT
 protected:
   std::vector<AbstractParamPtr> params;
-  QHash<QString, AbstractParam*> param_map;
+  std::unordered_map<std::string, AbstractParam*> param_map;
 
 
   void changedConfig()
@@ -503,7 +502,7 @@ public:
     for (const typename C::AbstractParamDescriptionConstPtr &param : C::__getParamDescriptions__())
     {
       params.push_back(initializeParam(param, this, current_config, config_layout));
-      param_map[QString::fromStdString(param->name)] = params.back().get();
+      param_map[param->name] = params.back().get();
     }
 
     QScrollArea * config_scroll_area = new QScrollArea;
@@ -521,120 +520,152 @@ public:
   {
     if (!config_client->setConfiguration(current_config))
     {
-      status_textbox->setText(QString::fromStdString(changed_param->name) + " change failed");
+      setStatus(QString::fromStdString(changed_param->name) + " change failed");
       tab_widget->setTabEnabled(tab_index, false);
     }
     else
     {
-      status_textbox->setText(QString::fromStdString(changed_param->name) + " change successful");
+      setStatus(QString::fromStdString(changed_param->name) + " change successful");
     }
+  }
+
+  void setStatus(const QString &message)
+  {
+    if (status_textbox)
+      status_textbox->setText(message);
+
+    ROS_INFO_STREAM(message.toStdString());
   }
 
   bool saveConfig(const QString &file_path)
   {
-    QFile file(file_path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-      status_textbox->setText(file_path + " could not be opened");
-      return false;
-    }
-    QTextStream out(&file);
+    YAML::Node config;
     for (const AbstractParamPtr &p : params)
     {
-      QString value;
-      QString quote = ""; // do not put quotation marks by default
       if (p->type == "bool")
       {
-        value = boost::any_cast<bool>(p->getValue()) ? "true" : "false";
+        config[p->name] = boost::any_cast<bool>(p->getValue()) ? "true" : "false";
       }
       else if (p->type == "int")
       {
-        value = QString::number(boost::any_cast<int>(p->getValue()));
+        config[p->name] = boost::any_cast<int>(p->getValue());
       }
       else if (p->type == "double")
       {
-        value = QString::number(boost::any_cast<double>(p->getValue()));
+        config[p->name] = boost::any_cast<double>(p->getValue());
       }
       else if (p->type == "str")
       {
-        quote = "\""; // put quotation marks around strings
-        value =QString::fromStdString(boost::any_cast<std::string>(p->getValue()));
+        config[p->name] = boost::any_cast<std::string>(p->getValue());
       }
       else
       {
         ROS_WARN_STREAM("Type " << p->type << " of parameter " << p->name << " not implemented");
         continue;
       }
-      out << QString::fromStdString(p->name) << ": " << quote << value << quote << "\n";
     }
+    YAML::Node config_root;
+    config_root[name] = config;
+
+    std::ofstream file(file_path.toStdString());
+    if (!file.is_open())
+    {
+      setStatus(file_path + " could not be opened");
+      return false;
+    }
+
+    file << config_root;
     file.close();
     return true;
   }
 
   bool loadConfig(const QString &file_path)
   {
-    QFile file(file_path);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    YAML::Node config_yaml;
+    try
     {
-      status_textbox->setText(file_path + " could not be read");
+      config_yaml = YAML::LoadFile(file_path.toStdString());
+    }
+    catch (YAML::ParserException)
+    {
+      setStatus(file_path + " not a valid YAML file");
       return false;
     }
-    QTextStream in(&file);
-    for (QString line = in.readLine(); !line.isNull(); line = in.readLine())
+    catch (YAML::BadFile)
     {
-      int column = line.indexOf(':');
-      if (column < 0) // not found
+      setStatus(file_path + " could not be loaded");
+      return false;
+    }
+
+    if (!config_yaml.IsMap())
+    {
+      setStatus("Configuration should be a YAML map");
+      return false;
+    }
+
+    if (config_yaml[name]) // config is in namespace
+    {
+      config_yaml = config_yaml[name];
+      if (!config_yaml.IsMap())
       {
+        setStatus("Configuration should be a YAML map");
+        return false;
+      }
+    }
+
+    size_t read_params = 0;
+
+    for (YAML::const_iterator it = config_yaml.begin(); it != config_yaml.end(); it++)
+    {
+      std::string name = it->first.as<std::string>();
+      auto param_it = param_map.find(name);
+      if (param_it == param_map.end())
+      {
+        ROS_WARN_STREAM("Invalid paramter " << name << " in config");
         continue;
       }
-      QString name = line.left(column).trimmed();
-      QString val = line.right(line.length() - column + 1).trimmed();
-      if (!param_map.contains(name))
-      {
-        ROS_WARN_STREAM("Invalid paramter " << name.toStdString() << " in config");
-        continue;
-      }
-      AbstractParam *p = param_map[name];
+      AbstractParam *p = param_it->second;
       boost::any value;
-      if (p->type == "bool")
+      try
       {
-        value = (val.toLower() == "true");
-      }
-      else if (p->type == "int")
-      {
-        value = val.toInt();
-      }
-      else if (p->type == "double")
-      {
-        value = val.toDouble();
-      }
-      else if (p->type == "str")
-      {
-        if (val.startsWith('"'))
+        if (p->type == "bool")
         {
-          int end = val.indexOf('"', 1);
-          if (end > 0)
-          {
-            value = val.mid(1, end - 1).toStdString();
-          }
-          else
-          {
-            value = val.toStdString();
-          }
+          value = it->second.as<bool>();
+        }
+        else if (p->type == "int")
+        {
+          value = it->second.as<int>();
+        }
+        else if (p->type == "double")
+        {
+          value = it->second.as<double>();
+        }
+        else if (p->type == "str")
+        {
+          value = it->second.as<std::string>();
         }
         else
         {
-          value = val.toStdString();
+          ROS_WARN_STREAM("Type " << p->type << " of parameter " << p->name << " not implemented");
+          continue;
         }
       }
-      else
+      catch(YAML::Exception e)
       {
-        ROS_WARN_STREAM("Type " << p->type << " of parameter " << p->name << " not implemented");
-        continue;
+        ROS_WARN_STREAM("Error parsing value for parameter " << p->name << ": " << e.msg);
       }
       p->setValue(value);
+      read_params++;
     }
-    file.close();
+
+    if (!config_client->setConfiguration(current_config))
+    {
+      setStatus(QString::number(read_params) + " parameters read for " + QString::fromStdString(name) + ", but could not be sent");
+      tab_widget->setTabEnabled(tab_index, false);
+      return false;
+    }
+
+    setStatus(QString::number(read_params) + " parameters read for " + QString::fromStdString(name));
     return true;
   }
 };
