@@ -17,6 +17,9 @@
 #include <QLineEdit>
 #include <QFormLayout>
 #include <QScrollArea>
+#include <QFile>
+#include <QTextStream>
+#include <QHash>
 
 #include <dynamic_reconfigure/client.h>
 #include <boost/any.hpp>
@@ -69,6 +72,8 @@ class AbstractReconfigureClient : public QObject
   Q_OBJECT
 protected:
   std::vector<AbstractParamPtr> params;
+  QHash<QString, AbstractParam*> param_map;
+
 
   void changedConfig()
   {
@@ -472,6 +477,7 @@ template<typename C>
 class ReconfigureClient : public AbstractReconfigureClient
 {
 private:
+  std::string name;
   C current_config;
   dynamic_reconfigure::Client<C> *config_client;
   QTabWidget *tab_widget;
@@ -489,7 +495,7 @@ private:
 
 public:
   ReconfigureClient(const std::string& name, QTabWidget *tab_widget, QLineEdit *statusTextBox)
-    : tab_widget(tab_widget), status_textbox(statusTextBox)
+    : name(name), tab_widget(tab_widget), status_textbox(statusTextBox)
   {
     QWidget *config_widget = new QWidget;
     QFormLayout *config_layout = new QFormLayout(config_widget);
@@ -497,6 +503,7 @@ public:
     for (const typename C::AbstractParamDescriptionConstPtr &param : C::__getParamDescriptions__())
     {
       params.push_back(initializeParam(param, this, current_config, config_layout));
+      param_map[QString::fromStdString(param->name)] = params.back().get();
     }
 
     QScrollArea * config_scroll_area = new QScrollArea;
@@ -521,6 +528,114 @@ public:
     {
       status_textbox->setText(QString::fromStdString(changed_param->name) + " change successful");
     }
+  }
+
+  bool saveConfig(const QString &file_path)
+  {
+    QFile file(file_path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+      status_textbox->setText(file_path + " could not be opened");
+      return false;
+    }
+    QTextStream out(&file);
+    for (const AbstractParamPtr &p : params)
+    {
+      QString value;
+      QString quote = ""; // do not put quotation marks by default
+      if (p->type == "bool")
+      {
+        value = boost::any_cast<bool>(p->getValue()) ? "true" : "false";
+      }
+      else if (p->type == "int")
+      {
+        value = QString::number(boost::any_cast<int>(p->getValue()));
+      }
+      else if (p->type == "double")
+      {
+        value = QString::number(boost::any_cast<double>(p->getValue()));
+      }
+      else if (p->type == "str")
+      {
+        quote = "\""; // put quotation marks around strings
+        value =QString::fromStdString(boost::any_cast<std::string>(p->getValue()));
+      }
+      else
+      {
+        ROS_WARN_STREAM("Type " << p->type << " of parameter " << p->name << " not implemented");
+        continue;
+      }
+      out << QString::fromStdString(p->name) << ": " << quote << value << quote << "\n";
+    }
+    file.close();
+    return true;
+  }
+
+  bool loadConfig(const QString &file_path)
+  {
+    QFile file(file_path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      status_textbox->setText(file_path + " could not be read");
+      return false;
+    }
+    QTextStream in(&file);
+    for (QString line = in.readLine(); !line.isNull(); line = in.readLine())
+    {
+      int column = line.indexOf(':');
+      if (column < 0) // not found
+      {
+        continue;
+      }
+      QString name = line.left(column).trimmed();
+      QString val = line.right(line.length() - column + 1).trimmed();
+      if (!param_map.contains(name))
+      {
+        ROS_WARN_STREAM("Invalid paramter " << name.toStdString() << " in config");
+        continue;
+      }
+      AbstractParam *p = param_map[name];
+      boost::any value;
+      if (p->type == "bool")
+      {
+        value = (val.toLower() == "true");
+      }
+      else if (p->type == "int")
+      {
+        value = val.toInt();
+      }
+      else if (p->type == "double")
+      {
+        value = val.toDouble();
+      }
+      else if (p->type == "str")
+      {
+        if (val.startsWith('"'))
+        {
+          int end = val.indexOf('"', 1);
+          if (end > 0)
+          {
+            value = val.mid(1, end - 1).toStdString();
+          }
+          else
+          {
+            value = val.toStdString();
+          }
+        }
+        else
+        {
+          value = val.toStdString();
+        }
+      }
+      else
+      {
+        ROS_WARN_STREAM("Type " << p->type << " of parameter " << p->name << " not implemented");
+        continue;
+      }
+      p->setValue(value);
+    }
+    file.close();
+    return true;
   }
 };
 

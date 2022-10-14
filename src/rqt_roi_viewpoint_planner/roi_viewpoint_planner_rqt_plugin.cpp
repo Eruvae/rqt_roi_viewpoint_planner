@@ -342,19 +342,32 @@ void RoiViewpointPlannerRqtPlugin::on_loadConfigPushButton_clicked()
     ui.statusTextBox->setText("YAML File name empty");
     return;      
   }
-  std::string load_command = "rosrun dynamic_reconfigure dynparam load /view_motion_planner ";
-  std::string yaml_filepath = file_path.toStdString();
-  try
-  {
-    system((load_command + yaml_filepath).c_str());
-    ui.statusTextBox->setText("YAML File loaded successfully");
 
-  }
-  catch(const std::exception& e)
+  int curtab = ui.configTabWidget->currentIndex();
+  bool success;
+  if (curtab == 0) // roi_viewpoint_planner
   {
-    std::cerr << e.what() << '\n';
-    ui.statusTextBox->setText("Failed to load Config from YAML File");
+    success = rvpConfigClient->loadConfig(file_path);
   }
+  else if (curtab == 1) // view_motion_planner
+  {
+    success = vmpConfigClient->loadConfig(file_path);
+  }
+  else
+  {
+    ui.statusTextBox->setText("Active config tab not supported.");
+    return;
+  }
+
+  if (success)
+  {
+    ui.statusTextBox->setText("YAML File loaded successfully");
+  }
+  else
+  {
+    ui.statusTextBox->setText("YAML File could not be loaded");
+  }
+
 }
 
 void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
@@ -368,22 +381,31 @@ void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
     return;      
   }
 
-  std::string yaml_filepath = file_path.toStdString();
-
-  std::string dump_command = "rosrun dynamic_reconfigure dynparam dump /view_motion_planner ";
-
-  try
+  int curtab = ui.configTabWidget->currentIndex();
+  bool success;
+  if (curtab == 0) // roi_viewpoint_planner
   {
-    system((dump_command + yaml_filepath).c_str());
+    success = rvpConfigClient->saveConfig(file_path);
+  }
+  else if (curtab == 1) // view_motion_planner
+  {
+    success = vmpConfigClient->saveConfig(file_path);
+  }
+  else
+  {
+    ui.statusTextBox->setText("Active config tab not supported.");
+    return;
+  }
+
+  if (success)
+  {
     ui.statusTextBox->setText("YAML File saved successfully");
-
   }
-  catch(const std::exception& e)
+  else
   {
-    std::cerr << e.what() << '\n';
-    ui.statusTextBox->setText("Failed to save YAML File");
+    ui.statusTextBox->setText("YAML File could not be saved");
   }
-    
+
 }
 
 
