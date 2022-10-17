@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="1" colspan="2">
-    <widget class="QGroupBox" name="evaluatorGroupBox">
+    <widget class="CollapsibleGroupBox" name="evaluatorGroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -139,7 +139,7 @@
     </widget>
    </item>
    <item row="2" column="1" colspan="2">
-    <widget class="QGroupBox" name="randomizePlantsGroupBox">
+    <widget class="CollapsibleGroupBox" name="randomizePlantsGroupBox">
      <property name="title">
       <string>Randomize plant positions</string>
      </property>
@@ -686,6 +686,12 @@
    <class>LedIndicator</class>
    <extends>QWidget</extends>
    <header>rqt_roi_viewpoint_planner/ledindicator.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header location="global">rqt_roi_viewpoint_planner/collapsiblegroupbox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

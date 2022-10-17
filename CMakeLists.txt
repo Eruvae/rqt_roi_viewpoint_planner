@@ -126,12 +126,14 @@ catkin_package(
 set (rvp_rqt_SRCS
   src/rqt_roi_viewpoint_planner/roi_viewpoint_planner_rqt_plugin.cpp
   src/rqt_roi_viewpoint_planner/ledindicator.cpp
+  src/rqt_roi_viewpoint_planner/collapsiblegroupbox.cpp
 )
 
 set(rvp_rqt_HDRS
   include/rqt_roi_viewpoint_planner/roi_viewpoint_planner_rqt_plugin.h
   include/rqt_roi_viewpoint_planner/reconfigure_client_gui.h
   include/rqt_roi_viewpoint_planner/ledindicator.h
+  include/rqt_roi_viewpoint_planner/collapsiblegroupbox.h
 )
 
 set(rvp_rqt_UIS
