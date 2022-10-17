@@ -25,6 +25,8 @@
 
 #include <yaml-cpp/yaml.h> // For decoding enum edit_method
 
+#include "collapsiblegroupbox.h"
+
 namespace rqt_roi_viewpoint_planner
 {
 
@@ -72,7 +74,6 @@ class AbstractReconfigureClient : public QObject
 protected:
   std::vector<AbstractParamPtr> params;
   std::unordered_map<std::string, AbstractParam*> param_map;
-
 
   void changedConfig()
   {
@@ -476,6 +477,64 @@ template<typename C>
 class ReconfigureClient : public AbstractReconfigureClient
 {
 private:
+  class ParamGroup
+  {
+  private:
+    std::string name;
+    int id;
+    int parent_id;
+
+    CollapsibleGroupBox *group_box;
+    QFormLayout *group_layout;
+
+    bool is_initialized;
+
+    inline static std::vector<ParamGroup*> groups;
+
+  public:
+    ParamGroup(const std::string &name, int id, int parent_id, QFormLayout *config_layout=nullptr)
+      : name(name), id(id), parent_id(parent_id), is_initialized(false)
+    {
+      if (id == 0) // default group
+      {
+        group_box = nullptr; // no group box for default group
+        group_layout = config_layout;
+        is_initialized = true; // no need to initialize default group
+      }
+      else
+      {
+        group_box = new CollapsibleGroupBox(QString::fromStdString(name));
+        group_layout = new QFormLayout();
+        group_box->setCollapsed(true);
+        group_box->setLayout(group_layout);
+      }
+
+      if (id >= groups.size())
+        groups.resize(id + 1);
+
+      groups[id] = this;
+    }
+
+    void initialize()
+    {
+      if (id != 0 && !is_initialized)
+      {
+        groups[parent_id]->group_layout->addRow(group_box);
+        is_initialized = true;
+      }
+    }
+
+    bool isInitialized()
+    {
+      return is_initialized;
+    }
+
+    QFormLayout* getLayout()
+    {
+      return group_layout;
+    }
+  };
+
   std::string name;
   C current_config;
   dynamic_reconfigure::Client<C> *config_client;
@@ -499,10 +558,37 @@ public:
     QWidget *config_widget = new QWidget;
     QFormLayout *config_layout = new QFormLayout(config_widget);
 
+    std::unordered_map<std::string, ParamGroup*> group_map;
+
+    for (const typename C::AbstractGroupDescriptionConstPtr &group : C::__getGroupDescriptions__())
+    {
+      ParamGroup *gui_group = new ParamGroup(group->name, group->id, group->parent, config_layout);
+      for (const typename C::AbstractParamDescriptionConstPtr &param : group->abstract_parameters)
+      {
+        group_map[param->name] = gui_group;
+      }
+    }
+
     for (const typename C::AbstractParamDescriptionConstPtr &param : C::__getParamDescriptions__())
     {
-      params.push_back(initializeParam(param, this, current_config, config_layout));
-      param_map[param->name] = params.back().get();
+      auto group_it = group_map.find(param->name);
+      if (group_it != group_map.end()) // parameter is in group
+      {
+        ParamGroup *group = group_it->second;
+        if (!group->isInitialized())
+        {
+          group->initialize();
+        }
+        params.push_back(initializeParam(param, this, current_config, group->getLayout()));
+        param_map[param->name] = params.back().get();
+      }
+      else // should not happen
+      {
+        ROS_WARN("Parameter not in any group (not even default); should not happen");
+        params.push_back(initializeParam(param, this, current_config, config_layout));
+        param_map[param->name] = params.back().get();
+      }
+
     }
 
     QScrollArea * config_scroll_area = new QScrollArea;
@@ -653,6 +739,7 @@ public:
       catch(YAML::Exception e)
       {
         ROS_WARN_STREAM("Error parsing value for parameter " << p->name << ": " << e.msg);
+        continue;
       }
       p->setValue(value);
       read_params++;
