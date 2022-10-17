@@ -517,8 +517,12 @@ private:
 
     void initialize()
     {
-      if (id != 0 && !is_initialized)
+      if (!is_initialized)
       {
+        if (!groups[parent_id]->isInitialized())
+        {
+          groups[parent_id]->initialize();
+        }
         groups[parent_id]->group_layout->addRow(group_box);
         is_initialized = true;
       }
