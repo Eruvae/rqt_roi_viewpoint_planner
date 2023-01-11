@@ -19,6 +19,7 @@
 #include <QLineEdit>
 #include <QFormLayout>
 #include <QScrollArea>
+#include <QEvent>
 
 #include <dynamic_reconfigure/client.h>
 #include <boost/any.hpp>
@@ -29,6 +30,19 @@
 
 namespace rqt_roi_viewpoint_planner
 {
+
+class BlockWheelEvent : public QObject
+{
+  Q_OBJECT
+
+public:
+  BlockWheelEvent(QObject *parent) : QObject(parent) {}
+
+  bool eventFilter(QObject *obj, QEvent *event) override
+  {
+    return obj == parent() && event->type() == QEvent::Wheel;
+  }
+};
 
 class AbstractReconfigureClient;
 
@@ -194,6 +208,7 @@ public:
   EnumParam(const typename C::AbstractParamDescriptionConstPtr &p, AbstractReconfigureClient *client, C &config, QFormLayout *configLayout)
     : Param<C, T>(p, client, config), comboBox(new QComboBox())
   {
+    comboBox->installEventFilter(new BlockWheelEvent(comboBox));
     YAML::Node enum_description = YAML::Load(p->edit_method);
     for (const YAML::Node &node : enum_description["enum"])
     {
@@ -299,6 +314,8 @@ public:
   IntParam(const typename C::AbstractParamDescriptionConstPtr &p, AbstractReconfigureClient *client, C &config, QFormLayout *configLayout)
     : Param<C, int>(p, client, config), spinBox(new QSpinBox()), slider(new QSlider(Qt::Orientation::Horizontal))
   {
+    spinBox->installEventFilter(new BlockWheelEvent(spinBox));
+    slider->installEventFilter(new BlockWheelEvent(slider));
     int min = boost::any_cast<int>(this->getMin());
     int max = boost::any_cast<int>(this->getMax());
     int def = boost::any_cast<int>(this->getDefault());
@@ -376,6 +393,8 @@ public:
   DoubleParam(const typename C::AbstractParamDescriptionConstPtr &p, AbstractReconfigureClient *client, C &config, QFormLayout *configLayout)
     : Param<C, double>(p, client, config), spinBox(new QDoubleSpinBox()), slider(new QSlider(Qt::Orientation::Horizontal))
   {
+    spinBox->installEventFilter(new BlockWheelEvent(spinBox));
+    slider->installEventFilter(new BlockWheelEvent(slider));
     double min = boost::any_cast<double>(this->getMin());
     double max = boost::any_cast<double>(this->getMax());
     double def = boost::any_cast<double>(this->getDefault());
@@ -598,6 +617,7 @@ public:
     QScrollArea * config_scroll_area = new QScrollArea;
     config_scroll_area->setWidgetResizable(true);
     config_scroll_area->setWidget(config_widget);
+    config_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
 
     tab_index = tab_widget->addTab(config_scroll_area, QString::fromStdString(name));
     tab_widget->setTabEnabled(tab_index, false);

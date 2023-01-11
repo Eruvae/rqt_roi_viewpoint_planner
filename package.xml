@@ -57,6 +57,7 @@
   <depend>roi_viewpoint_planner_msgs</depend>
   <depend>std_srvs</depend>
   <depend>dynamic_reconfigure</depend>
+  <depend>trolley_simulation</depend>
   <!--depend>moveit_setup_assistant</depend-->
 
   <!-- The export tag contains other, unspecified, tags -->

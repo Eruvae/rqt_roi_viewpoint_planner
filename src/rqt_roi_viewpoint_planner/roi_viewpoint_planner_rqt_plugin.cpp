@@ -34,6 +34,36 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   // add widget to the user interface
   context.addWidget(widget);
 
+  // Block mouse wheel events for combo and spin boxes
+  ui.evalTrialsSpinBox->installEventFilter(new BlockWheelEvent(ui.evalTrialsSpinBox));
+  ui.evalEndParamComboBox->installEventFilter(new BlockWheelEvent(ui.evalEndParamComboBox));
+  ui.evalDurationSpinBox->installEventFilter(new BlockWheelEvent(ui.evalDurationSpinBox));
+  ui.startingIndexSpinBox->installEventFilter(new BlockWheelEvent(ui.startingIndexSpinBox));
+
+  ui.randMinXSpinBox->installEventFilter(new BlockWheelEvent(ui.randMinXSpinBox));
+  ui.randMinYSpinBox->installEventFilter(new BlockWheelEvent(ui.randMinYSpinBox));
+  ui.randMinZSpinBox->installEventFilter(new BlockWheelEvent(ui.randMinZSpinBox));
+  ui.randMaxXSpinBox->installEventFilter(new BlockWheelEvent(ui.randMaxXSpinBox));
+  ui.randMaxYSpinBox->installEventFilter(new BlockWheelEvent(ui.randMaxYSpinBox));
+  ui.randMaxZSpinBox->installEventFilter(new BlockWheelEvent(ui.randMaxZSpinBox));
+  ui.randMinDistSpinBox->installEventFilter(new BlockWheelEvent(ui.randMinDistSpinBox));
+
+  ui.moveArmComboBox->installEventFilter(new BlockWheelEvent(ui.moveArmComboBox));
+
+  ui.mapLoadOffsetXSpinBox->installEventFilter(new BlockWheelEvent(ui.mapLoadOffsetXSpinBox));
+  ui.mapLoadOffsetYSpinBox->installEventFilter(new BlockWheelEvent(ui.mapLoadOffsetYSpinBox));
+  ui.mapLoadOffsetZSpinBox->installEventFilter(new BlockWheelEvent(ui.mapLoadOffsetZSpinBox));
+  ui.mapLoadOffsetRollSpinBox->installEventFilter(new BlockWheelEvent(ui.mapLoadOffsetRollSpinBox));
+  ui.mapLoadOffsetPitchSpinBox->installEventFilter(new BlockWheelEvent(ui.mapLoadOffsetPitchSpinBox));
+  ui.mapLoadOffsetYawSpinBox->installEventFilter(new BlockWheelEvent(ui.mapLoadOffsetYawSpinBox));
+
+  ui.trolleyMoveToSpinBox->installEventFilter(new BlockWheelEvent(ui.trolleyMoveToSpinBox));
+  ui.trolleyLiftToSpinBox->installEventFilter(new BlockWheelEvent(ui.trolleyLiftToSpinBox));
+
+  // Hide collapsible group boxes by default
+  ui.evaluatorGroupBox->setCollapsed(true);
+  ui.randomizePlantsGroupBox->setCollapsed(true);
+
   qRegisterMetaType<roi_viewpoint_planner_msgs::PlannerStateConstPtr>();
 
   connect(this, SIGNAL(rvpConfigChangedSignal(const roi_viewpoint_planner::PlannerConfig&)), this, SLOT(rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig&)));
@@ -50,8 +80,6 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   connect(ui.loadConfigPushButton, SIGNAL(clicked()), this, SLOT(on_loadConfigPushButton_clicked()));
   connect(ui.saveConfigPushButton, SIGNAL(clicked()), this, SLOT(on_saveConfigPushButton_clicked()));
-
-
 
   moveToStateThread.reset(new MoveToStateThread(getNodeHandle()));
   connect(moveToStateThread.get(), SIGNAL(success(QString)), ui.statusTextBox, SLOT(setText(QString)));

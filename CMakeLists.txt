@@ -10,6 +10,7 @@ set (CATKIN_DEPENDENCIES
     roi_viewpoint_planner_msgs
     std_srvs
     dynamic_reconfigure
+    trolley_simulation
     #moveit_setup_assistant
 )
 
