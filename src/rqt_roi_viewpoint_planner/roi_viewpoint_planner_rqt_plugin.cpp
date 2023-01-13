@@ -18,7 +18,8 @@ namespace rqt_roi_viewpoint_planner
 
 RoiViewpointPlannerRqtPlugin::RoiViewpointPlannerRqtPlugin() :
   rqt_gui_cpp::Plugin(),
-  widget(nullptr)
+  widget(nullptr),
+  trolley_update_timer(new QTimer(this))
 {
   setObjectName("RoiViewpointPlannerRqtPlugin");
 }
@@ -98,6 +99,12 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   rvpConfigClient = new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("roi_viewpoint_planner", ui.configTabWidget, ui.statusTextBox);
   vmpConfigClient = new ReconfigureClient<view_motion_planner::VmpConfig>("view_motion_planner", ui.configTabWidget, ui.statusTextBox);
+
+  connect(trolley_update_timer, &QTimer::timeout, this, &RoiViewpointPlannerRqtPlugin::updateTrolleyPosition);
+  trolley_update_timer->start(100);
+
+  connect(ui.trolleyMovePushButton, SIGNAL(clicked()), this, SLOT(on_trolleyMovePushButton_clicked()));
+  connect(ui.trolleyLiftPushButton, SIGNAL(clicked()), this, SLOT(on_trolleyLiftPushButton_clicked()));
 
   //ROS_INFO_STREAM("Init is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
 }
@@ -414,6 +421,26 @@ void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
   }
 }
 
+void RoiViewpointPlannerRqtPlugin::updateTrolleyPosition()
+{
+  double pos = trolley_remote.getPosition();
+  double height = trolley_remote.getHeight();
+
+  ui.trolleyCurPosSpinBox->setValue(pos);
+  ui.trolleyCurHeightSpinBox->setValue(height);
+}
+
+void RoiViewpointPlannerRqtPlugin::on_trolleyMovePushButton_clicked()
+{
+  double pos = ui.trolleyMoveToSpinBox->value();
+  trolley_remote.moveTo(pos);
+}
+
+void RoiViewpointPlannerRqtPlugin::on_trolleyLiftPushButton_clicked()
+{
+  double height = ui.trolleyLiftToSpinBox->value();
+  trolley_remote.liftTo(height);
+}
 
 constexpr std::array<std::array<double, 6>, 5> RoiViewpointPlannerRqtPlugin::MOVE_CONFIGS;
 

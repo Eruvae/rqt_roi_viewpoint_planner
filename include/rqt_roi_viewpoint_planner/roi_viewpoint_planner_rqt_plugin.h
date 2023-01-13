@@ -23,6 +23,8 @@
 #include <roi_viewpoint_planner_msgs/VmpConfig.h>
 #include <roi_viewpoint_planner_msgs/SaveCurrentRobotState.h>
 
+#include <trolley_simulation/trolley_remote.h>
+
 #include <std_srvs/Trigger.h>
 #include <std_srvs/Empty.h>
 #include "ui_roi_viewpoint_planner_rqt_plugin.h"
@@ -110,6 +112,10 @@ private slots:
   void on_randomizePlantsPushButton_clicked();
   void on_startEvaluatorPushButton_clicked();
 
+  void updateTrolleyPosition();
+  void on_trolleyMovePushButton_clicked();
+  void on_trolleyLiftPushButton_clicked();
+
 signals:
   // Internal signals
   void rvpConfigChangedSignal(const roi_viewpoint_planner::PlannerConfig &received_config);
@@ -139,6 +145,9 @@ private:
   ros::ServiceClient randomizePlantPositionsClient;
   ros::ServiceClient startEvaluatorClient;
   ros::ServiceClient saveCurrentRobotStateClient;
+
+  trolley_remote::TrolleyRemote trolley_remote;
+  QTimer *trolley_update_timer;
 
   void setQuaternion(geometry_msgs::Quaternion &q, double roll, double pitch, double yaw);
 
