@@ -93,6 +93,9 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
   startEvaluatorClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::StartEvaluator>("/roi_viewpoint_planner/start_evaluator");
   saveCurrentRobotStateClient = getNodeHandle().serviceClient<roi_viewpoint_planner_msgs::SaveCurrentRobotState>("/roi_viewpoint_planner/save_robot_state");
 
+  flipWssrClient = getNodeHandle().serviceClient<std_srvs::Empty>("/roi_viewpoint_planner/flip_ws_and_sr");
+  updateWssrMarkerClient = getNodeHandle().serviceClient<std_srvs::Empty>("/roi_viewpoint_planner/update_ws_and_sr_marker");
+
   plannerStateSub = getNodeHandle().subscribe("/roi_viewpoint_planner/planner_state", 10, &RoiViewpointPlannerRqtPlugin::plannerStateCallback, this);
 
   confirmPlanExecutionServer = getNodeHandle().advertiseService("/roi_viewpoint_planner/request_execution_confirmation", &RoiViewpointPlannerRqtPlugin::confirmPlanExecutionCallback, this);
@@ -105,6 +108,9 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   connect(ui.trolleyMovePushButton, SIGNAL(clicked()), this, SLOT(on_trolleyMovePushButton_clicked()));
   connect(ui.trolleyLiftPushButton, SIGNAL(clicked()), this, SLOT(on_trolleyLiftPushButton_clicked()));
+
+  connect(ui.flipWssrPushButton, SIGNAL(clicked()), this, SLOT(on_flipWssrPushButton_clicked()));
+  connect(ui.updateWssrMarkerPushButton, SIGNAL(clicked()), this, SLOT(on_updateWssrMarkerPushButton_clicked()));
 
   //ROS_INFO_STREAM("Init is GUI thread: " << (QThread::currentThread() == QCoreApplication::instance()->thread()));
 }
@@ -440,6 +446,33 @@ void RoiViewpointPlannerRqtPlugin::on_trolleyLiftPushButton_clicked()
 {
   double height = ui.trolleyLiftToSpinBox->value();
   trolley_remote.liftTo(height);
+}
+
+void RoiViewpointPlannerRqtPlugin::on_flipWssrPushButton_clicked()
+{
+  std_srvs::Empty srv;
+  if (flipWssrClient.call(srv))
+  {
+    ui.statusTextBox->setText("Flip WS/SR successfully");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call flip WS/SR service");
+  }
+}
+
+
+void RoiViewpointPlannerRqtPlugin::on_updateWssrMarkerPushButton_clicked()
+{
+  std_srvs::Empty srv;
+  if (updateWssrMarkerClient.call(srv))
+  {
+    ui.statusTextBox->setText("Update WS/SR marker successfully");
+  }
+  else
+  {
+    ui.statusTextBox->setText("Failed to call update WS/SR marker service");
+  }
 }
 
 constexpr std::array<std::array<double, 6>, 5> RoiViewpointPlannerRqtPlugin::MOVE_CONFIGS;

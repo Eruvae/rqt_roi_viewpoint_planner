@@ -101,8 +101,6 @@ private slots:
   void on_loadConfigPushButton_clicked();
   void on_saveConfigPushButton_clicked();
 
-
-
   // Internal slots
   void rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
   void vmpConfigChanged(const view_motion_planner::VmpConfig &received_config);
@@ -115,6 +113,9 @@ private slots:
   void updateTrolleyPosition();
   void on_trolleyMovePushButton_clicked();
   void on_trolleyLiftPushButton_clicked();
+
+  void on_flipWssrPushButton_clicked();
+  void on_updateWssrMarkerPushButton_clicked();
 
 signals:
   // Internal signals
@@ -145,6 +146,8 @@ private:
   ros::ServiceClient randomizePlantPositionsClient;
   ros::ServiceClient startEvaluatorClient;
   ros::ServiceClient saveCurrentRobotStateClient;
+  ros::ServiceClient flipWssrClient;
+  ros::ServiceClient updateWssrMarkerClient;
 
   trolley_remote::TrolleyRemote trolley_remote;
   QTimer *trolley_update_timer;
