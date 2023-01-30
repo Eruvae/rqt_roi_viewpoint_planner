@@ -336,6 +336,7 @@ void RoiViewpointPlannerRqtPlugin::on_startEvaluatorPushButton_clicked()
   srv.request.max_point.y = ui.randMaxYSpinBox->value();
   srv.request.max_point.z = ui.randMaxZSpinBox->value();
   srv.request.min_dist = ui.randMinDistSpinBox->value();
+  srv.request.with_trolley = ui.evalWithTrolleyCheckBox->isChecked();
   if (startEvaluatorClient.call(srv))
   {
     if (srv.response.success)
