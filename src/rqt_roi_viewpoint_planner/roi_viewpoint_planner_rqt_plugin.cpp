@@ -433,8 +433,33 @@ void RoiViewpointPlannerRqtPlugin::updateTrolleyPosition()
   double pos = trolley_remote.getPosition();
   double height = trolley_remote.getHeight();
 
-  ui.trolleyCurPosSpinBox->setValue(pos);
-  ui.trolleyCurHeightSpinBox->setValue(height);
+  if (std::isnan(pos))
+  {
+    ui.trolleyCurPosSpinBox->setDisabled(true);
+    ui.trolleyMoveToSpinBox->setDisabled(true);
+    ui.trolleyMovePushButton->setDisabled(true);
+  }
+  else
+  {
+    ui.trolleyCurPosSpinBox->setDisabled(false);
+    ui.trolleyMoveToSpinBox->setDisabled(false);
+    ui.trolleyMovePushButton->setDisabled(false);
+    ui.trolleyCurPosSpinBox->setValue(pos);
+  }
+
+  if (std::isnan(height))
+  {
+    ui.trolleyCurHeightSpinBox->setDisabled(true);
+    ui.trolleyLiftToSpinBox->setDisabled(true);
+    ui.trolleyLiftPushButton->setDisabled(true);
+  }
+  else
+  {
+    ui.trolleyCurHeightSpinBox->setDisabled(false);
+    ui.trolleyLiftToSpinBox->setDisabled(false);
+    ui.trolleyLiftPushButton->setDisabled(false);
+    ui.trolleyCurHeightSpinBox->setValue(height);
+  }
 }
 
 void RoiViewpointPlannerRqtPlugin::on_trolleyMovePushButton_clicked()
