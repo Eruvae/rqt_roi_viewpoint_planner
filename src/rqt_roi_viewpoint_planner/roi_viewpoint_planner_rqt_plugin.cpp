@@ -121,6 +121,8 @@ void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
   plannerStateSub.shutdown();
   confirmPlanExecutionServer.shutdown();
   saveOctomapClient.shutdown();
+
+  trolley_update_timer->stop();
 }
 
 void RoiViewpointPlannerRqtPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
