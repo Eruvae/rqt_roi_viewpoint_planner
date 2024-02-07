@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <roi_viewpoint_planner_msgs/PlannerConfig.h>
+#include <roi_viewpoint_planner_msgs/VmpConfig.h>
 
 Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
 
@@ -67,7 +69,6 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   qRegisterMetaType<roi_viewpoint_planner_msgs::PlannerStateConstPtr>();
 
-  connect(this, SIGNAL(rvpConfigChangedSignal(const roi_viewpoint_planner::PlannerConfig&)), this, SLOT(rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig&)));
   connect(this, SIGNAL(planRequestSignal(bool)), this, SLOT(planRequest(bool)));
   connect(this, SIGNAL(plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)), this, SLOT(plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &)));
 
@@ -100,8 +101,10 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   confirmPlanExecutionServer = getNodeHandle().advertiseService("/roi_viewpoint_planner/request_execution_confirmation", &RoiViewpointPlannerRqtPlugin::confirmPlanExecutionCallback, this);
 
-  rvpConfigClient = new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("roi_viewpoint_planner", ui.configTabWidget, ui.statusTextBox);
-  vmpConfigClient = new ReconfigureClient<view_motion_planner::VmpConfig>("view_motion_planner", ui.configTabWidget, ui.statusTextBox);
+  configClients[0].reset(new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("roi_viewpoint_planner", ui.configTabWidget, ui.statusTextBox));
+  configClients[1].reset(new ReconfigureClient<view_motion_planner::VmpConfig>("view_motion_planner", ui.configTabWidget, ui.statusTextBox));
+
+  trolley_remote.reset(new trolley_remote::TrolleyRemote());
 
   connect(trolley_update_timer, &QTimer::timeout, this, &RoiViewpointPlannerRqtPlugin::updateTrolleyPosition);
   trolley_update_timer->start(100);
@@ -118,11 +121,28 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 void RoiViewpointPlannerRqtPlugin::shutdownPlugin()
 {
   // unregister all publishers here
-  plannerStateSub.shutdown();
-  confirmPlanExecutionServer.shutdown();
+  moveToStateThread->wait(); // if moving, wait for service call to finish
+  moveToStateThread.reset();
+
   saveOctomapClient.shutdown();
+  loadOctomapClient.shutdown();
+  resetOctomapClient.shutdown();
+  randomizePlantPositionsClient.shutdown();
+  startEvaluatorClient.shutdown();
+  saveCurrentRobotStateClient.shutdown();
+
+  flipWssrClient.shutdown();
+  updateWssrMarkerClient.shutdown();
+
+  plannerStateSub.shutdown();
+
+  confirmPlanExecutionServer.shutdown();
+
+  for (auto &client : configClients)
+    client.reset();
 
   trolley_update_timer->stop();
+  trolley_remote.reset();
 }
 
 void RoiViewpointPlannerRqtPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
@@ -137,12 +157,12 @@ void RoiViewpointPlannerRqtPlugin::restoreSettings(const qt_gui_cpp::Settings& p
   // v = instance_settings.value(k)
 }
 
-/*bool hasConfiguration() const
+/*bool RoiViewpointPlannerRqtPlugin::hasConfiguration() const
 {
   return true;
 }
 
-void triggerConfiguration()
+void RoiViewpointPlannerRqtPlugin::triggerConfiguration()
 {
   // Usually used to open a dialog to offer the user a set of configuration
 }*/
@@ -165,11 +185,6 @@ void RoiViewpointPlannerRqtPlugin::plannerStateChanged(const roi_viewpoint_plann
   ui.planningLed->setState(false);
   ui.movingLed->setState(state->robot_is_moving);
   ui.scanLed->setState(state->scan_inserted);
-}
-
-void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc)
-{
-  ROS_INFO_STREAM("Description callback called");
 }
 
 // DO NOT DIRECTLY UPDATE UI ELEMENTS HERE
@@ -388,19 +403,12 @@ void RoiViewpointPlannerRqtPlugin::on_loadConfigPushButton_clicked()
   }
 
   int curtab = ui.configTabWidget->currentIndex();
-  if (curtab == 0) // roi_viewpoint_planner
-  {
-    rvpConfigClient->loadConfig(file_path);
-  }
-  else if (curtab == 1) // view_motion_planner
-  {
-    vmpConfigClient->loadConfig(file_path);
-  }
-  else
+  if (curtab < 0 || curtab >= configClients.size())
   {
     ui.statusTextBox->setText("Active config tab not supported.");
     return;
   }
+  configClients[curtab]->loadConfig(file_path);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
@@ -415,25 +423,18 @@ void RoiViewpointPlannerRqtPlugin::on_saveConfigPushButton_clicked()
   }
 
   int curtab = ui.configTabWidget->currentIndex();
-  if (curtab == 0) // roi_viewpoint_planner
-  {
-    rvpConfigClient->saveConfig(file_path);
-  }
-  else if (curtab == 1) // view_motion_planner
-  {
-    vmpConfigClient->saveConfig(file_path);
-  }
-  else
+  if (curtab < 0 || curtab >= configClients.size())
   {
     ui.statusTextBox->setText("Active config tab not supported.");
     return;
   }
+  configClients[curtab]->saveConfig(file_path);
 }
 
 void RoiViewpointPlannerRqtPlugin::updateTrolleyPosition()
 {
-  double pos = trolley_remote.getPosition();
-  double height = trolley_remote.getHeight();
+  double pos = trolley_remote->getPosition();
+  double height = trolley_remote->getHeight();
 
   if (std::isnan(pos))
   {
@@ -467,13 +468,13 @@ void RoiViewpointPlannerRqtPlugin::updateTrolleyPosition()
 void RoiViewpointPlannerRqtPlugin::on_trolleyMovePushButton_clicked()
 {
   double pos = ui.trolleyMoveToSpinBox->value();
-  trolley_remote.moveTo(pos);
+  trolley_remote->moveTo(pos);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_trolleyLiftPushButton_clicked()
 {
   double height = ui.trolleyLiftToSpinBox->value();
-  trolley_remote.liftTo(height);
+  trolley_remote->liftTo(height);
 }
 
 void RoiViewpointPlannerRqtPlugin::on_flipWssrPushButton_clicked()

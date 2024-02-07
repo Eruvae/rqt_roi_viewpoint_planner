@@ -12,7 +12,6 @@
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <dynamic_reconfigure/client.h>
-#include <roi_viewpoint_planner_msgs/PlannerConfig.h>
 #include <roi_viewpoint_planner_msgs/EvaluatorConfig.h>
 #include <roi_viewpoint_planner_msgs/PlannerState.h>
 #include <roi_viewpoint_planner_msgs/SaveOctomap.h>
@@ -20,7 +19,6 @@
 #include <roi_viewpoint_planner_msgs/MoveToState.h>
 #include <roi_viewpoint_planner_msgs/RandomizePlantPositions.h>
 #include <roi_viewpoint_planner_msgs/StartEvaluator.h>
-#include <roi_viewpoint_planner_msgs/VmpConfig.h>
 #include <roi_viewpoint_planner_msgs/SaveCurrentRobotState.h>
 
 #include <trolley_simulation/trolley_remote.h>
@@ -102,8 +100,6 @@ private slots:
   void on_saveConfigPushButton_clicked();
 
   // Internal slots
-  void rvpConfigChanged(const roi_viewpoint_planner::PlannerConfig &received_config);
-  void vmpConfigChanged(const view_motion_planner::VmpConfig &received_config);
   void planRequest(bool enable);
   void plannerStateChanged(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
@@ -118,9 +114,6 @@ private slots:
   void on_updateWssrMarkerPushButton_clicked();
 
 signals:
-  // Internal signals
-  void rvpConfigChangedSignal(const roi_viewpoint_planner::PlannerConfig &received_config);
-  void vmpConfigChangedSignal(const view_motion_planner::VmpConfig &received_config);
   void planRequestSignal(bool enable);
   void plannerStateSignal(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 
@@ -138,8 +131,6 @@ private:
   Ui::RoiViewpointPlannerRqtPlugin ui;
   QWidget* widget;
   std::unique_ptr<MoveToStateThread> moveToStateThread;
-  roi_viewpoint_planner::PlannerConfig rvp_current_config;
-  view_motion_planner::VmpConfig vmp_current_config;
   ros::ServiceClient saveOctomapClient;
   ros::ServiceClient loadOctomapClient;
   ros::ServiceClient resetOctomapClient;
@@ -149,7 +140,7 @@ private:
   ros::ServiceClient flipWssrClient;
   ros::ServiceClient updateWssrMarkerClient;
 
-  trolley_remote::TrolleyRemote trolley_remote;
+  std::unique_ptr<trolley_remote::TrolleyRemote> trolley_remote;
   QTimer *trolley_update_timer;
 
   void setQuaternion(geometry_msgs::Quaternion &q, double roll, double pitch, double yaw);
@@ -158,10 +149,8 @@ private:
 
   ros::ServiceServer confirmPlanExecutionServer;
 
-  ReconfigureClient<roi_viewpoint_planner::PlannerConfig> *rvpConfigClient;
-  ReconfigureClient<view_motion_planner::VmpConfig> *vmpConfigClient;
+  std::array<std::unique_ptr<AbstractReconfigureClient>, 2> configClients;
 
-  void descriptionCallback(const dynamic_reconfigure::ConfigDescription& desc);
   bool confirmPlanExecutionCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   void plannerStateCallback(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);
 };

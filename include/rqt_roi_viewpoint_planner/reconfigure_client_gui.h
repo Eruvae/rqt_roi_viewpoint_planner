@@ -104,6 +104,8 @@ public:
   virtual ~AbstractReconfigureClient() {}
 
   virtual void sendConfig(const AbstractParam *changed_param) = 0;
+  virtual bool saveConfig(const QString &file_path) = 0;
+  virtual bool loadConfig(const QString &file_path) = 0;
 };
 
 template<typename C>
@@ -560,7 +562,7 @@ private:
 
   std::string name;
   C current_config;
-  dynamic_reconfigure::Client<C> *config_client;
+  std::unique_ptr<dynamic_reconfigure::Client<C>> config_client;
   QTabWidget *tab_widget;
   int tab_index;
   QLineEdit *status_textbox;
@@ -622,11 +624,11 @@ public:
     tab_index = tab_widget->addTab(config_scroll_area, QString::fromStdString(name));
     tab_widget->setTabEnabled(tab_index, false);
 
-    config_client = new dynamic_reconfigure::Client<C>(name, boost::bind(&ReconfigureClient::configCallback, this, _1));
+    config_client.reset(new dynamic_reconfigure::Client<C>(name, boost::bind(&ReconfigureClient::configCallback, this, _1)));
     QObject::connect(this, &ReconfigureClient::configChanged, this, &ReconfigureClient::changedConfig);
   }
 
-  virtual void sendConfig(const AbstractParam *changed_param)
+  void sendConfig(const AbstractParam *changed_param) override
   {
     if (!config_client->setConfiguration(current_config))
     {
@@ -647,7 +649,7 @@ public:
     ROS_INFO_STREAM(message.toStdString());
   }
 
-  bool saveConfig(const QString &file_path)
+  bool saveConfig(const QString &file_path) override
   {
     YAML::Node config;
     for (const AbstractParamPtr &p : params)
@@ -689,7 +691,7 @@ public:
     return true;
   }
 
-  bool loadConfig(const QString &file_path)
+  bool loadConfig(const QString &file_path) override
   {
     YAML::Node config_yaml;
     try
