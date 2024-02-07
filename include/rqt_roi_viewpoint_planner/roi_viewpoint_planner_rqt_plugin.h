@@ -149,7 +149,7 @@ private:
 
   ros::ServiceServer confirmPlanExecutionServer;
 
-  std::array<std::unique_ptr<AbstractReconfigureClient>, 2> configClients;
+  std::array<std::unique_ptr<AbstractReconfigureClient>, 3> configClients;
 
   bool confirmPlanExecutionCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   void plannerStateCallback(const roi_viewpoint_planner_msgs::PlannerStateConstPtr &state);

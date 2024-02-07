@@ -12,6 +12,7 @@
 
 #include <roi_viewpoint_planner_msgs/PlannerConfig.h>
 #include <roi_viewpoint_planner_msgs/VmpConfig.h>
+#include <roi_viewpoint_planner_msgs/SvpConfig.h>
 
 Q_DECLARE_METATYPE(roi_viewpoint_planner_msgs::PlannerStateConstPtr)
 
@@ -103,6 +104,7 @@ void RoiViewpointPlannerRqtPlugin::initPlugin(qt_gui_cpp::PluginContext& context
 
   configClients[0].reset(new ReconfigureClient<roi_viewpoint_planner::PlannerConfig>("roi_viewpoint_planner", ui.configTabWidget, ui.statusTextBox));
   configClients[1].reset(new ReconfigureClient<view_motion_planner::VmpConfig>("view_motion_planner", ui.configTabWidget, ui.statusTextBox));
+  configClients[2].reset(new ReconfigureClient<semantic_view_planner::SvpConfig>("semantic_view_planner", ui.configTabWidget, ui.statusTextBox));
 
   trolley_remote.reset(new trolley_remote::TrolleyRemote());
 
